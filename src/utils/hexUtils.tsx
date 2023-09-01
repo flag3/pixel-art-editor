@@ -1,19 +1,23 @@
-import { Color } from "./../constants/index";
+import { Color, Method } from "./../constants/index";
 
 export const handleExport = (
   pixels: Color[][],
+  method: Method,
   setHexValue: React.Dispatch<React.SetStateAction<string>>
 ) => {
-  const hexStrings = pixelsToHex(pixels);
+  const hexStrings = pixelsToHex(pixels, method);
   setHexValue(hexStrings.join(" "));
 };
 
 export const handleImport = (
   hexValue: string,
+  rows: number,
+  cols: number,
+  method: Method,
   callback: (newPixels: Color[][]) => void
 ) => {
   const hexStrings = splitHexValues(hexValue);
-  const newPixels = hexToPixels(hexStrings);
+  const newPixels = hexToPixels(hexStrings, rows, cols, method);
   callback(newPixels);
 };
 
@@ -30,29 +34,49 @@ const pixelToBits = (color: Color): [number, number] => {
   }
 };
 
-const pixelsToHex = (pixels: Color[][]): string[] => {
+const pixelsToHex = (pixels: Color[][], method: Method): string[] => {
   const hexes: string[] = [];
-  const width = 16;
-  const height = 16;
+  const width = pixels.length;
+  const height = pixels[0].length;
 
-  for (let y_block = 0; y_block < height; y_block += 8) {
-    for (let x_block = 0; x_block < width; x_block += 8) {
-      for (let y = y_block; y < y_block + 8; y++) {
-        let bin1 = "";
-        let bin2 = "";
-        for (let x = x_block; x < x_block + 8; x++) {
-          const [bit1, bit2] = pixelToBits(pixels[x][y]);
-          bin1 += bit1;
-          bin2 += bit2;
-        }
-        hexes.push(
-          parseInt(bin1, 2).toString(16).padStart(2, "0").toUpperCase()
-        );
-        hexes.push(
-          parseInt(bin2, 2).toString(16).padStart(2, "0").toUpperCase()
-        );
+  const convertBlockToHex = (x_start: number, y_start: number) => {
+    for (let y = y_start; y < y_start + 8; y++) {
+      let bin1 = "";
+      let bin2 = "";
+      for (let x = x_start; x < x_start + 8; x++) {
+        const [bit1, bit2] = pixelToBits(pixels[x][y]);
+        bin1 += bit1;
+        bin2 += bit2;
       }
+      hexes.push(parseInt(bin1, 2).toString(16).padStart(2, "0").toUpperCase());
+      hexes.push(parseInt(bin2, 2).toString(16).padStart(2, "0").toUpperCase());
     }
+  };
+
+  switch (method) {
+    case "leftToRight":
+      for (let y_block = 0; y_block < height; y_block += 8) {
+        for (let x_block = 0; x_block < width; x_block += 8) {
+          convertBlockToHex(x_block, y_block);
+        }
+      }
+      break;
+
+    case "topToBottomLeft":
+      for (let x_block = 0; x_block < width; x_block += 8) {
+        for (let y_block = 0; y_block < height; y_block += 8) {
+          convertBlockToHex(x_block, y_block);
+        }
+      }
+      break;
+
+    case "topToBottomRight":
+      for (let x_block = width - 8; x_block >= 0; x_block -= 8) {
+        for (let y_block = 0; y_block < height; y_block += 8) {
+          convertBlockToHex(x_block, y_block);
+        }
+      }
+      break;
   }
 
   return hexes;
@@ -87,13 +111,19 @@ const bitsToPixel = (bit1: string, bit2: string): Color => {
   throw new Error("Invalid bits combination");
 };
 
-const hexToPixels = (hexes: string[]): Color[][] => {
-  while (hexes.length < 128) {
+const hexToPixels = (
+  hexes: string[],
+  rows: number,
+  cols: number,
+  method: Method
+): Color[][] => {
+  const expectedLength = (rows * cols) / 2;
+  while (hexes.length < expectedLength) {
     hexes.push("00");
   }
 
-  if (hexes.length > 128) {
-    hexes = hexes.slice(0, 128);
+  if (hexes.length > expectedLength) {
+    hexes = hexes.slice(0, expectedLength);
   }
   const hexPattern = /^[0-9A-Fa-f]{2}$/;
 
@@ -106,28 +136,52 @@ const hexToPixels = (hexes: string[]): Color[][] => {
     }
   }
 
-  const pixels: Color[][] = Array(16)
+  const pixels: Color[][] = Array(rows)
     .fill(null)
-    .map(() => Array(16).fill("white") as Color[]);
+    .map(() => Array(cols).fill("white") as Color[]);
 
   let hexIndex = 0;
 
-  for (let y_block = 0; y_block < 16; y_block += 8) {
-    for (let x_block = 0; x_block < 16; x_block += 8) {
-      for (let y = y_block; y < y_block + 8; y++) {
-        const bin1 = parseInt(hexes[hexIndex], 16).toString(2).padStart(8, "0");
-        hexIndex++;
+  const convertHexToBlock = (x_start: number, y_start: number) => {
+    for (let y = y_start; y < y_start + 8 && y < cols; y++) {
+      const bin1 = parseInt(hexes[hexIndex], 16).toString(2).padStart(8, "0");
+      hexIndex++;
 
-        const bin2 = parseInt(hexes[hexIndex], 16).toString(2).padStart(8, "0");
-        hexIndex++;
+      const bin2 = parseInt(hexes[hexIndex], 16).toString(2).padStart(8, "0");
+      hexIndex++;
 
-        for (let x = x_block; x < x_block + 8; x++) {
-          const bit1 = bin1[x - x_block];
-          const bit2 = bin2[x - x_block];
-          pixels[x][y] = bitsToPixel(bit1, bit2);
-        }
+      for (let x = x_start; x < x_start + 8 && x < rows; x++) {
+        const bit1 = bin1[x - x_start];
+        const bit2 = bin2[x - x_start];
+        pixels[x][y] = bitsToPixel(bit1, bit2);
       }
     }
+  };
+
+  switch (method) {
+    case "leftToRight":
+      for (let y_block = 0; y_block < cols; y_block += 8) {
+        for (let x_block = 0; x_block < rows; x_block += 8) {
+          convertHexToBlock(x_block, y_block);
+        }
+      }
+      break;
+
+    case "topToBottomLeft":
+      for (let x_block = 0; x_block < rows; x_block += 8) {
+        for (let y_block = 0; y_block < cols; y_block += 8) {
+          convertHexToBlock(x_block, y_block);
+        }
+      }
+      break;
+
+    case "topToBottomRight":
+      for (let x_block = rows - 8; x_block >= 0; x_block -= 8) {
+        for (let y_block = 0; y_block < cols; y_block += 8) {
+          convertHexToBlock(x_block, y_block);
+        }
+      }
+      break;
   }
 
   return pixels;

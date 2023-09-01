@@ -1,39 +1,43 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import ColorPicker from "./components/ColorPicker";
 import Grid from "./components/Grid";
+import GridSize from "./components/GridSize";
 import Buttons from "./components/Buttons";
+import ConversionMethod from "./components/ConversionMethod";
 import HexConverter from "./components/HexConverter";
 import { handleExport, handleImport } from "./utils/hexUtils";
 import { exportToImage, importFromImage } from "./utils/imageUtils";
 import { useUndoRedo } from "./hooks/useUndoRedo";
-import { Color, initialPixels } from "./constants/index";
+import { Color, Method, createInitialPixels } from "./constants/index";
 import "./App.css";
 
 function App() {
   const [selectedColor, setSelectedColor] = useState<Color>("white");
+  const [conversionMethod, setConversionMethod] =
+    useState<Method>("leftToRight");
   const [hexValue, setHexValue] = useState("");
-  const { pixels, undoStack, redoStack, applyChange, undo, redo } =
-    useUndoRedo();
-
-  const [tweeting, setTweeting] = useState(false);
-  const handleTweet = () => {
-    handleExport(pixels, setHexValue);
-    setTweeting(true);
-  };
-
-  useEffect(() => {
-    if (tweeting) {
-      const tweetText = `Check out my pixel art:\n${hexValue}\nhttps://flag3.github.io/pixel-art-editor/`;
-      const tweetURL = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-        tweetText
-      )}`;
-      window.open(tweetURL, "_blank");
-      setTweeting(false);
-    }
-  }, [hexValue, tweeting]);
+  const {
+    gridSize,
+    setGridSize,
+    pixels,
+    setPixels,
+    undoStack,
+    redoStack,
+    clearUndoRedo,
+    applyChange,
+    undo,
+    redo,
+  } = useUndoRedo();
 
   return (
     <div className="container">
+      <GridSize
+        gridSize={gridSize}
+        setGridSize={setGridSize}
+        setPixels={setPixels}
+        clearUndoRedo={clearUndoRedo}
+        clearHexValue={() => setHexValue("")}
+      />
       <ColorPicker
         selectedColor={selectedColor}
         setSelectColor={setSelectedColor}
@@ -49,19 +53,35 @@ function App() {
       <Buttons
         undo={undo}
         redo={redo}
-        resetPixels={() => applyChange(initialPixels)}
+        resetPixels={() =>
+          applyChange(createInitialPixels(gridSize.rows, gridSize.cols))
+        }
         exportToImage={() => exportToImage(pixels)}
-        importFromImage={(event) => importFromImage(event, applyChange)}
+        importFromImage={(event) =>
+          importFromImage(event, gridSize.rows, gridSize.cols, applyChange)
+        }
         undoStack={undoStack}
         redoStack={redoStack}
+      />
+      <ConversionMethod
+        conversionMethod={conversionMethod}
+        setConversionMethod={setConversionMethod}
       />
       <HexConverter
         hexValue={hexValue}
         setHexValue={setHexValue}
-        handleExport={() => handleExport(pixels, setHexValue)}
-        handleImport={() => handleImport(hexValue, applyChange)}
+        gridSize={gridSize}
+        handleExport={() => handleExport(pixels, conversionMethod, setHexValue)}
+        handleImport={() =>
+          handleImport(
+            hexValue,
+            gridSize.rows,
+            gridSize.cols,
+            conversionMethod,
+            applyChange
+          )
+        }
       />
-      <button onClick={handleTweet}>X</button>
     </div>
   );
 }

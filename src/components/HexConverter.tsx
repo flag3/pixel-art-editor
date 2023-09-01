@@ -1,6 +1,7 @@
 type HexConverterProps = {
   hexValue: string;
   setHexValue: React.Dispatch<React.SetStateAction<string>>;
+  gridSize: { rows: number; cols: number };
   handleExport: () => void;
   handleImport: () => void;
 };
@@ -8,6 +9,7 @@ type HexConverterProps = {
 function HexConverter({
   hexValue,
   setHexValue,
+  gridSize,
   handleExport,
   handleImport,
 }: HexConverterProps) {
@@ -17,8 +19,8 @@ function HexConverter({
       <textarea
         value={hexValue}
         onChange={(e) => setHexValue(e.target.value)}
-        rows={4}
-        cols={49}
+        rows={gridSize.rows / 4}
+        cols={gridSize.cols * 3}
       />
       <button onClick={handleImport}>From Hex</button>
     </div>

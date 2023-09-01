@@ -1,4 +1,4 @@
-type Color = "white" | "lightgray" | "darkgray" | "black";
+import { Color } from "./../constants/index";
 
 type ButtonsProps = {
   undo: () => void;

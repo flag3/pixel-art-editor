@@ -1,5 +1,4 @@
 #root {
-  max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
@@ -43,7 +42,7 @@
 
 .grid {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
   margin-bottom: 10px;
 }
@@ -110,4 +109,42 @@
 
 .button-container > button {
   margin: 0 5px;
+}
+
+.container > div:not(:last-child) {
+  margin-bottom: 24px;
+}
+
+.grid-size-selector,
+.conversion-method {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  appearance: none;
+  font-size: 16px;
+}
+
+button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background-color: #333;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 16px;
+}
+
+button:hover {
+  background-color: #555;
+}
+
+button:disabled {
+  background-color: #aaa;
+  cursor: not-allowed;
 }

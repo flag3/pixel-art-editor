@@ -1,5 +1,4 @@
-type Color = "white" | "lightgray" | "darkgray" | "black";
-const colors: Color[] = ["white", "lightgray", "darkgray", "black"];
+import { Color, colors } from "./../constants/index";
 
 interface ColorPickerProps {
   selectedColor: Color;
