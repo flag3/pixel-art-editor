@@ -1,4 +1,4 @@
-import { Color, Method } from "./../constants/index";
+import { Color, Size, Method } from "./../constants/index";
 
 export const handleExport = (
   pixels: Color[][],
@@ -11,13 +11,12 @@ export const handleExport = (
 
 export const handleImport = (
   hexValue: string,
-  rows: number,
-  cols: number,
+  size: Size,
   method: Method,
   callback: (newPixels: Color[][]) => void
 ) => {
   const hexStrings = splitHexValues(hexValue);
-  const newPixels = hexToPixels(hexStrings, rows, cols, method);
+  const newPixels = hexToPixels(hexStrings, size, method);
   callback(newPixels);
 };
 
@@ -113,11 +112,10 @@ const bitsToPixel = (bit1: string, bit2: string): Color => {
 
 const hexToPixels = (
   hexes: string[],
-  rows: number,
-  cols: number,
+  size: Size,
   method: Method
 ): Color[][] => {
-  const expectedLength = (rows * cols) / 2;
+  const expectedLength = (size.width * size.height) / 2;
   while (hexes.length < expectedLength) {
     hexes.push("00");
   }
@@ -136,21 +134,21 @@ const hexToPixels = (
     }
   }
 
-  const pixels: Color[][] = Array(rows)
+  const pixels: Color[][] = Array(size.width)
     .fill(null)
-    .map(() => Array(cols).fill("white") as Color[]);
+    .map(() => Array(size.height).fill("white") as Color[]);
 
   let hexIndex = 0;
 
   const convertHexToBlock = (x_start: number, y_start: number) => {
-    for (let y = y_start; y < y_start + 8 && y < cols; y++) {
+    for (let y = y_start; y < y_start + 8; y++) {
       const bin1 = parseInt(hexes[hexIndex], 16).toString(2).padStart(8, "0");
       hexIndex++;
 
       const bin2 = parseInt(hexes[hexIndex], 16).toString(2).padStart(8, "0");
       hexIndex++;
 
-      for (let x = x_start; x < x_start + 8 && x < rows; x++) {
+      for (let x = x_start; x < x_start + 8; x++) {
         const bit1 = bin1[x - x_start];
         const bit2 = bin2[x - x_start];
         pixels[x][y] = bitsToPixel(bit1, bit2);
@@ -160,24 +158,24 @@ const hexToPixels = (
 
   switch (method) {
     case "leftToRight":
-      for (let y_block = 0; y_block < cols; y_block += 8) {
-        for (let x_block = 0; x_block < rows; x_block += 8) {
+      for (let y_block = 0; y_block < size.height; y_block += 8) {
+        for (let x_block = 0; x_block < size.width; x_block += 8) {
           convertHexToBlock(x_block, y_block);
         }
       }
       break;
 
     case "topToBottomLeft":
-      for (let x_block = 0; x_block < rows; x_block += 8) {
-        for (let y_block = 0; y_block < cols; y_block += 8) {
+      for (let x_block = 0; x_block < size.width; x_block += 8) {
+        for (let y_block = 0; y_block < size.height; y_block += 8) {
           convertHexToBlock(x_block, y_block);
         }
       }
       break;
 
     case "topToBottomRight":
-      for (let x_block = rows - 8; x_block >= 0; x_block -= 8) {
-        for (let y_block = 0; y_block < cols; y_block += 8) {
+      for (let x_block = size.width - 8; x_block >= 0; x_block -= 8) {
+        for (let y_block = 0; y_block < size.height; y_block += 8) {
           convertHexToBlock(x_block, y_block);
         }
       }

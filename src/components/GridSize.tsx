@@ -1,15 +1,14 @@
 import {
   Color,
+  Size,
   createInitialPixels,
-  possibleCols,
-  possibleRows,
+  widths,
+  heights,
 } from "./../constants/index";
 
 interface GridSizeProps {
-  gridSize: { rows: number; cols: number };
-  setGridSize: React.Dispatch<
-    React.SetStateAction<{ rows: number; cols: number }>
-  >;
+  gridSize: Size;
+  setGridSize: React.Dispatch<React.SetStateAction<Size>>;
   setPixels: React.Dispatch<React.SetStateAction<Color[][]>>;
   clearUndoRedo: () => void;
   clearHexValue: () => void;
@@ -27,20 +26,23 @@ const GridSize = ({
       <label>
         Width:
         <select
-          value={gridSize.cols}
+          value={gridSize.width}
           onChange={(e) => {
             setGridSize((prev) => ({
               ...prev,
-              cols: Number(e.target.value),
+              width: Number(e.target.value),
             }));
             setPixels(
-              createInitialPixels(gridSize.rows, Number(e.target.value))
+              createInitialPixels({
+                width: Number(e.target.value),
+                height: gridSize.height,
+              })
             );
             clearUndoRedo();
             clearHexValue();
           }}
         >
-          {possibleCols.map((num) => (
+          {widths.map((num) => (
             <option key={num} value={num}>
               {num}
             </option>
@@ -50,20 +52,23 @@ const GridSize = ({
       <label>
         Height:
         <select
-          value={gridSize.rows}
+          value={gridSize.height}
           onChange={(e) => {
             setGridSize((prev) => ({
               ...prev,
-              rows: Number(e.target.value),
+              height: Number(e.target.value),
             }));
             setPixels(
-              createInitialPixels(Number(e.target.value), gridSize.cols)
+              createInitialPixels({
+                width: gridSize.width,
+                height: Number(e.target.value),
+              })
             );
             clearUndoRedo();
             clearHexValue();
           }}
         >
-          {possibleRows.map((num) => (
+          {heights.map((num) => (
             <option key={num} value={num}>
               {num}
             </option>

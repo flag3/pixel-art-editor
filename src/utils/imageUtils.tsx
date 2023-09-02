@@ -1,12 +1,9 @@
-import { Color, colors } from "./../constants/index";
+import { Color, Size, colors } from "./../constants/index";
 
 export const exportToImage = (pixels: Color[][]) => {
   const canvas = document.createElement("canvas");
-  const rows = pixels.length;
-  const cols = pixels[0].length;
-
-  canvas.width = rows;
-  canvas.height = cols;
+  canvas.width = pixels.length;
+  canvas.height = pixels[0].length;
   const ctx = canvas.getContext("2d")!;
 
   const computedStyle = getComputedStyle(document.documentElement);
@@ -27,8 +24,7 @@ export const exportToImage = (pixels: Color[][]) => {
 
 export const importFromImage = (
   event: React.ChangeEvent<HTMLInputElement>,
-  rows: number,
-  cols: number,
+  size: Size,
   callback: (pixels: Color[][]) => void
 ) => {
   const file = event.target.files && event.target.files[0];
@@ -48,21 +44,21 @@ export const importFromImage = (
   reader.onload = (e) => {
     const img = new Image();
     img.onload = () => {
-      if (img.height !== rows || img.width !== cols) {
-        alert(`Please upload a ${cols}x${rows} image.`);
+      if (img.width !== size.width || img.height !== size.height) {
+        alert(`Please upload a ${size.width}x${size.height} image.`);
         return;
       }
 
       const canvas = document.createElement("canvas");
-      canvas.width = cols;
-      canvas.height = rows;
+      canvas.width = size.width;
+      canvas.height = size.height;
       const ctx = canvas.getContext("2d")!;
-      ctx.drawImage(img, 0, 0, cols, rows);
+      ctx.drawImage(img, 0, 0, size.width, size.height);
 
       const newPixels: Color[][] = [];
-      for (let x = 0; x < cols; x++) {
+      for (let x = 0; x < size.width; x++) {
         const row: Color[] = [];
-        for (let y = 0; y < rows; y++) {
+        for (let y = 0; y < size.height; y++) {
           const pixelData = ctx.getImageData(x, y, 1, 1).data;
           row.push(getClosestColor(pixelData[0], pixelData[1], pixelData[2]));
         }

@@ -1,11 +1,9 @@
 import { useState } from "react";
-import { Color, createInitialPixels } from "./../constants/index";
+import { Color, Size, createInitialPixels } from "./../constants/index";
 
 export const useUndoRedo = () => {
-  const [gridSize, setGridSize] = useState({ rows: 16, cols: 16 });
-  const [pixels, setPixels] = useState(() =>
-    createInitialPixels(gridSize.rows, gridSize.cols)
-  );
+  const [gridSize, setGridSize] = useState<Size>({ width: 16, height: 16 });
+  const [pixels, setPixels] = useState(() => createInitialPixels(gridSize));
   const [undoStack, setUndoStack] = useState<Color[][][]>([]);
   const [redoStack, setRedoStack] = useState<Color[][][]>([]);
 

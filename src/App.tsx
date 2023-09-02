@@ -53,12 +53,10 @@ function App() {
       <Buttons
         undo={undo}
         redo={redo}
-        resetPixels={() =>
-          applyChange(createInitialPixels(gridSize.rows, gridSize.cols))
-        }
+        resetPixels={() => applyChange(createInitialPixels(gridSize))}
         exportToImage={() => exportToImage(pixels)}
         importFromImage={(event) =>
-          importFromImage(event, gridSize.rows, gridSize.cols, applyChange)
+          importFromImage(event, gridSize, applyChange)
         }
         undoStack={undoStack}
         redoStack={redoStack}
@@ -70,16 +68,10 @@ function App() {
       <HexConverter
         hexValue={hexValue}
         setHexValue={setHexValue}
-        gridSize={gridSize}
+        size={gridSize}
         handleExport={() => handleExport(pixels, conversionMethod, setHexValue)}
         handleImport={() =>
-          handleImport(
-            hexValue,
-            gridSize.rows,
-            gridSize.cols,
-            conversionMethod,
-            applyChange
-          )
+          handleImport(hexValue, gridSize, conversionMethod, applyChange)
         }
       />
     </div>
