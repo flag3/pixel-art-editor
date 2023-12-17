@@ -1,11 +1,12 @@
-import { Color, Size, Method } from "./../constants/index";
+import { Color, Size, Method, ColorMode } from "./../constants/index";
 
 export const handleExport = (
   pixels: Color[][],
   method: Method,
-  setHexValue: React.Dispatch<React.SetStateAction<string>>
+  colorMode: ColorMode,
+  setHexValue: React.Dispatch<React.SetStateAction<string>>,
 ) => {
-  const hexStrings = pixelsToHex(pixels, method);
+  const hexStrings = pixelsToHex(pixels, method, colorMode);
   setHexValue(hexStrings.join(" "));
 };
 
@@ -13,10 +14,11 @@ export const handleImport = (
   hexValue: string,
   size: Size,
   method: Method,
-  callback: (newPixels: Color[][]) => void
+  colorMode: ColorMode,
+  callback: (newPixels: Color[][]) => void,
 ) => {
   const hexStrings = splitHexValues(hexValue);
-  const newPixels = hexToPixels(hexStrings, size, method);
+  const newPixels = hexToPixels(hexStrings, size, method, colorMode);
   callback(newPixels);
 };
 
@@ -33,12 +35,20 @@ const pixelToBits = (color: Color): [number, number] => {
   }
 };
 
-const pixelsToHex = (pixels: Color[][], method: Method): string[] => {
+const pixelsToHex = (
+  pixels: Color[][],
+  method: Method,
+  colorMode: ColorMode,
+): string[] => {
   const hexes: string[] = [];
   const width = pixels.length;
   const height = pixels[0].length;
 
-  const convertBlockToHex = (x_start: number, y_start: number) => {
+  const convertBlockToHex = (
+    x_start: number,
+    y_start: number,
+    colorMode: ColorMode,
+  ) => {
     for (let y = y_start; y < y_start + 8; y++) {
       let bin1 = "";
       let bin2 = "";
@@ -47,8 +57,18 @@ const pixelsToHex = (pixels: Color[][], method: Method): string[] => {
         bin1 += bit1;
         bin2 += bit2;
       }
-      hexes.push(parseInt(bin1, 2).toString(16).padStart(2, "0").toUpperCase());
-      hexes.push(parseInt(bin2, 2).toString(16).padStart(2, "0").toUpperCase());
+      if (colorMode == "fourColors") {
+        hexes.push(
+          parseInt(bin1, 2).toString(16).padStart(2, "0").toUpperCase(),
+        );
+        hexes.push(
+          parseInt(bin2, 2).toString(16).padStart(2, "0").toUpperCase(),
+        );
+      } else {
+        hexes.push(
+          parseInt(bin2, 2).toString(16).padStart(2, "0").toUpperCase(),
+        );
+      }
     }
   };
 
@@ -56,7 +76,7 @@ const pixelsToHex = (pixels: Color[][], method: Method): string[] => {
     case "leftToRight":
       for (let y_block = 0; y_block < height; y_block += 8) {
         for (let x_block = 0; x_block < width; x_block += 8) {
-          convertBlockToHex(x_block, y_block);
+          convertBlockToHex(x_block, y_block, colorMode);
         }
       }
       break;
@@ -64,7 +84,7 @@ const pixelsToHex = (pixels: Color[][], method: Method): string[] => {
     case "topToBottomLeft":
       for (let x_block = 0; x_block < width; x_block += 8) {
         for (let y_block = 0; y_block < height; y_block += 8) {
-          convertBlockToHex(x_block, y_block);
+          convertBlockToHex(x_block, y_block, colorMode);
         }
       }
       break;
@@ -72,7 +92,7 @@ const pixelsToHex = (pixels: Color[][], method: Method): string[] => {
     case "topToBottomRight":
       for (let x_block = width - 8; x_block >= 0; x_block -= 8) {
         for (let y_block = 0; y_block < height; y_block += 8) {
-          convertBlockToHex(x_block, y_block);
+          convertBlockToHex(x_block, y_block, colorMode);
         }
       }
       break;
@@ -113,8 +133,12 @@ const bitsToPixel = (bit1: string, bit2: string): Color => {
 const hexToPixels = (
   hexes: string[],
   size: Size,
-  method: Method
+  method: Method,
+  colorMode: ColorMode,
 ): Color[][] => {
+  if (colorMode === "twoColors") {
+    hexes = hexes.flatMap((n) => [n, n]);
+  }
   const expectedLength = (size.width * size.height) / 2;
   while (hexes.length < expectedLength) {
     hexes.push("00");

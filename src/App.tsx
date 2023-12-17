@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ColorModeSelector from "./components/ColorModeSelector";
 import ColorPicker from "./components/ColorPicker";
 import Grid from "./components/Grid";
 import GridSize from "./components/GridSize";
@@ -8,10 +9,16 @@ import HexConverter from "./components/HexConverter";
 import { handleExport, handleImport } from "./utils/hexUtils";
 import { exportToImage, importFromImage } from "./utils/imageUtils";
 import { useUndoRedo } from "./hooks/useUndoRedo";
-import { Color, Method, createInitialPixels } from "./constants/index";
+import {
+  Color,
+  Method,
+  ColorMode,
+  createInitialPixels,
+} from "./constants/index";
 import "./App.css";
 
 function App() {
+  const [colorMode, setColorMode] = useState<ColorMode>("fourColors");
   const [selectedColor, setSelectedColor] = useState<Color>("white");
   const [conversionMethod, setConversionMethod] =
     useState<Method>("leftToRight");
@@ -31,6 +38,7 @@ function App() {
 
   return (
     <div className="container">
+      <ColorModeSelector colorMode={colorMode} setColorMode={setColorMode} />
       <GridSize
         gridSize={gridSize}
         setGridSize={setGridSize}
@@ -41,6 +49,7 @@ function App() {
       <ColorPicker
         selectedColor={selectedColor}
         setSelectColor={setSelectedColor}
+        colorMode={colorMode}
       />
       <Grid
         pixels={pixels}
@@ -56,7 +65,7 @@ function App() {
         resetPixels={() => applyChange(createInitialPixels(gridSize))}
         exportToImage={() => exportToImage(pixels)}
         importFromImage={(event) =>
-          importFromImage(event, gridSize, applyChange)
+          importFromImage(event, gridSize, colorMode, applyChange)
         }
         undoStack={undoStack}
         redoStack={redoStack}
@@ -69,9 +78,18 @@ function App() {
         hexValue={hexValue}
         setHexValue={setHexValue}
         size={gridSize}
-        handleExport={() => handleExport(pixels, conversionMethod, setHexValue)}
+        colorMode={colorMode}
+        handleExport={() =>
+          handleExport(pixels, conversionMethod, colorMode, setHexValue)
+        }
         handleImport={() =>
-          handleImport(hexValue, gridSize, conversionMethod, applyChange)
+          handleImport(
+            hexValue,
+            gridSize,
+            conversionMethod,
+            colorMode,
+            applyChange,
+          )
         }
       />
     </div>

@@ -1,11 +1,17 @@
-import { Color, colors } from "./../constants/index";
+import { Color, ColorMode, twoColors, fourColors } from "./../constants/index";
 
 interface ColorPickerProps {
   selectedColor: Color;
   setSelectColor: React.Dispatch<React.SetStateAction<Color>>;
+  colorMode: ColorMode;
 }
 
-const ColorPicker = ({ selectedColor, setSelectColor }: ColorPickerProps) => {
+const ColorPicker = ({
+  selectedColor,
+  setSelectColor,
+  colorMode,
+}: ColorPickerProps) => {
+  const colors = colorMode === "twoColors" ? twoColors : fourColors;
   return (
     <div className="color-picker">
       {colors.map((color) => (

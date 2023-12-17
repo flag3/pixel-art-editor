@@ -1,9 +1,10 @@
-import { Size } from "./../constants/index";
+import { Size, ColorMode } from "./../constants/index";
 
 type HexConverterProps = {
   hexValue: string;
   setHexValue: React.Dispatch<React.SetStateAction<string>>;
   size: Size;
+  colorMode: ColorMode;
   handleExport: () => void;
   handleImport: () => void;
 };
@@ -12,6 +13,7 @@ function HexConverter({
   hexValue,
   setHexValue,
   size,
+  colorMode,
   handleExport,
   handleImport,
 }: HexConverterProps) {
@@ -21,7 +23,7 @@ function HexConverter({
       <textarea
         value={hexValue}
         onChange={(e) => setHexValue(e.target.value)}
-        rows={size.height / 4}
+        rows={colorMode === "fourColors" ? size.height / 4 : size.height / 8}
         cols={size.width * 3}
       />
       <button onClick={handleImport}>From Hex</button>

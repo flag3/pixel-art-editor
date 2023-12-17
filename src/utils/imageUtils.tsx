@@ -1,4 +1,10 @@
-import { Color, Size, colors } from "./../constants/index";
+import {
+  Color,
+  Size,
+  ColorMode,
+  twoColors,
+  fourColors,
+} from "./../constants/index";
 
 export const exportToImage = (pixels: Color[][]) => {
   const canvas = document.createElement("canvas");
@@ -25,7 +31,8 @@ export const exportToImage = (pixels: Color[][]) => {
 export const importFromImage = (
   event: React.ChangeEvent<HTMLInputElement>,
   size: Size,
-  callback: (pixels: Color[][]) => void
+  colorMode: ColorMode,
+  callback: (pixels: Color[][]) => void,
 ) => {
   const file = event.target.files && event.target.files[0];
   if (!file) return;
@@ -60,7 +67,14 @@ export const importFromImage = (
         const row: Color[] = [];
         for (let y = 0; y < size.height; y++) {
           const pixelData = ctx.getImageData(x, y, 1, 1).data;
-          row.push(getClosestColor(pixelData[0], pixelData[1], pixelData[2]));
+          row.push(
+            getClosestColor(
+              pixelData[0],
+              pixelData[1],
+              pixelData[2],
+              colorMode,
+            ),
+          );
         }
         newPixels.push(row);
       }
@@ -73,10 +87,17 @@ export const importFromImage = (
   reader.readAsDataURL(file);
 };
 
-const getClosestColor = (r: number, g: number, b: number): Color => {
+const getClosestColor = (
+  r: number,
+  g: number,
+  b: number,
+  colorMode: ColorMode,
+): Color => {
   const computedStyle = getComputedStyle(document.documentElement);
   let minDistance = Infinity;
   let closestColor: Color = "white";
+
+  const colors = colorMode === "twoColors" ? twoColors : fourColors;
 
   for (const color of colors) {
     const cssRGB = computedStyle.getPropertyValue(`--${color}`).trim();
@@ -89,7 +110,7 @@ const getClosestColor = (r: number, g: number, b: number): Color => {
       const distance = Math.sqrt(
         Math.pow(colorR - r, 2) +
           Math.pow(colorG - g, 2) +
-          Math.pow(colorB - b, 2)
+          Math.pow(colorB - b, 2),
       );
 
       if (distance < minDistance) {
