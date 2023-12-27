@@ -1,4 +1,4 @@
-import { Color, ColorMode, twoColors, fourColors } from "./../constants/index";
+import { Color, ColorMode, colorsByMode } from "./../constants/index";
 
 interface ColorPickerProps {
   selectedColor: Color;
@@ -11,10 +11,9 @@ const ColorPicker = ({
   setSelectColor,
   colorMode,
 }: ColorPickerProps) => {
-  const colors = colorMode === "twoColors" ? twoColors : fourColors;
   return (
     <div className="color-picker">
-      {colors.map((color) => (
+      {colorsByMode[colorMode].map((color) => (
         <div
           key={color}
           className={`color-swatch ${color} ${

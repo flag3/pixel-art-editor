@@ -1,10 +1,4 @@
-import {
-  Color,
-  Size,
-  ColorMode,
-  twoColors,
-  fourColors,
-} from "./../constants/index";
+import { Color, Size, ColorMode, colorsByMode } from "./../constants/index";
 
 export const exportToImage = (pixels: Color[][]) => {
   const canvas = document.createElement("canvas");
@@ -97,9 +91,7 @@ const getClosestColor = (
   let minDistance = Infinity;
   let closestColor: Color = "white";
 
-  const colors = colorMode === "twoColors" ? twoColors : fourColors;
-
-  for (const color of colors) {
+  for (const color of colorsByMode[colorMode]) {
     const cssRGB = computedStyle.getPropertyValue(`--${color}`).trim();
     const match = cssRGB.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
     if (match) {
