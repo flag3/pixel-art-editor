@@ -1,10 +1,10 @@
 import { Color, ColorMode, colorsByMode } from "./../constants/index";
 
-interface ColorPickerProps {
+type ColorPickerProps = {
   selectedColor: Color;
   setSelectColor: React.Dispatch<React.SetStateAction<Color>>;
   colorMode: ColorMode;
-}
+};
 
 const ColorPicker = ({
   selectedColor,

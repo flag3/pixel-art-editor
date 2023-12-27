@@ -9,14 +9,14 @@ type HexConverterProps = {
   handleImport: () => void;
 };
 
-function HexConverter({
+const HexConverter = ({
   hexValue,
   setHexValue,
   size,
   colorMode,
   handleExport,
   handleImport,
-}: HexConverterProps) {
+}: HexConverterProps) => {
   return (
     <div>
       <button onClick={handleExport}>To Hex</button>
@@ -29,6 +29,6 @@ function HexConverter({
       <button onClick={handleImport}>From Hex</button>
     </div>
   );
-}
+};
 
 export default HexConverter;

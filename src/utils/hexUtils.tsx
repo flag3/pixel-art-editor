@@ -1,24 +1,24 @@
-import { Color, Size, Method, ColorMode } from "./../constants/index";
+import { Color, Size, ConversionMethod, ColorMode } from "./../constants/index";
 
 export const handleExport = (
   pixels: Color[][],
-  method: Method,
+  conversionMethod: ConversionMethod,
   colorMode: ColorMode,
   setHexValue: React.Dispatch<React.SetStateAction<string>>,
 ) => {
-  const hexStrings = pixelsToHex(pixels, method, colorMode);
+  const hexStrings = pixelsToHex(pixels, conversionMethod, colorMode);
   setHexValue(hexStrings.join(" "));
 };
 
 export const handleImport = (
   hexValue: string,
   size: Size,
-  method: Method,
+  conversionMethod: ConversionMethod,
   colorMode: ColorMode,
   callback: (newPixels: Color[][]) => void,
 ) => {
   const hexStrings = splitHexValues(hexValue);
-  const newPixels = hexToPixels(hexStrings, size, method, colorMode);
+  const newPixels = hexToPixels(hexStrings, size, conversionMethod, colorMode);
   callback(newPixels);
 };
 
@@ -37,7 +37,7 @@ const pixelToBits = (color: Color): [number, number] => {
 
 const pixelsToHex = (
   pixels: Color[][],
-  method: Method,
+  conversionMethod: ConversionMethod,
   colorMode: ColorMode,
 ): string[] => {
   const hexes: string[] = [];
@@ -72,7 +72,7 @@ const pixelsToHex = (
     }
   };
 
-  switch (method) {
+  switch (conversionMethod) {
     case "leftToRight":
       for (let y_block = 0; y_block < height; y_block += 8) {
         for (let x_block = 0; x_block < width; x_block += 8) {
@@ -133,7 +133,7 @@ const bitsToPixel = (bit1: string, bit2: string): Color => {
 const hexToPixels = (
   hexes: string[],
   size: Size,
-  method: Method,
+  conversionMethod: ConversionMethod,
   colorMode: ColorMode,
 ): Color[][] => {
   if (colorMode === "twoColors") {
@@ -180,7 +180,7 @@ const hexToPixels = (
     }
   };
 
-  switch (method) {
+  switch (conversionMethod) {
     case "leftToRight":
       for (let y_block = 0; y_block < size.height; y_block += 8) {
         for (let x_block = 0; x_block < size.width; x_block += 8) {

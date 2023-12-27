@@ -6,13 +6,13 @@ import {
   heights,
 } from "./../constants/index";
 
-interface GridSizeProps {
+type GridSizeProps = {
   gridSize: Size;
   setGridSize: React.Dispatch<React.SetStateAction<Size>>;
   setPixels: React.Dispatch<React.SetStateAction<Color[][]>>;
   clearUndoRedo: () => void;
   clearHexValue: () => void;
-}
+};
 
 const GridSize = ({
   gridSize,
@@ -36,7 +36,7 @@ const GridSize = ({
               createInitialPixels({
                 width: Number(e.target.value),
                 height: gridSize.height,
-              })
+              }),
             );
             clearUndoRedo();
             clearHexValue();
@@ -62,7 +62,7 @@ const GridSize = ({
               createInitialPixels({
                 width: gridSize.width,
                 height: Number(e.target.value),
-              })
+              }),
             );
             clearUndoRedo();
             clearHexValue();

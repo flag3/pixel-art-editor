@@ -4,14 +4,14 @@ import ColorPicker from "./components/ColorPicker";
 import Grid from "./components/Grid";
 import GridSize from "./components/GridSize";
 import Buttons from "./components/Buttons";
-import ConversionMethod from "./components/ConversionMethod";
+import ConversionMethodSelector from "./components/ConversionMethod";
 import HexConverter from "./components/HexConverter";
 import { handleExport, handleImport } from "./utils/hexUtils";
 import { exportToImage, importFromImage } from "./utils/imageUtils";
 import { useUndoRedo } from "./hooks/useUndoRedo";
 import {
   Color,
-  Method,
+  ConversionMethod,
   ColorMode,
   createInitialPixels,
 } from "./constants/index";
@@ -21,7 +21,7 @@ function App() {
   const [colorMode, setColorMode] = useState<ColorMode>("fourColors");
   const [selectedColor, setSelectedColor] = useState<Color>("white");
   const [conversionMethod, setConversionMethod] =
-    useState<Method>("leftToRight");
+    useState<ConversionMethod>("leftToRight");
   const [hexValue, setHexValue] = useState("");
   const {
     gridSize,
@@ -70,7 +70,7 @@ function App() {
         undoStack={undoStack}
         redoStack={redoStack}
       />
-      <ConversionMethod
+      <ConversionMethodSelector
         conversionMethod={conversionMethod}
         setConversionMethod={setConversionMethod}
       />

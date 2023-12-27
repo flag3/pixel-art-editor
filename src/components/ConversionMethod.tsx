@@ -1,19 +1,23 @@
-import { Method } from "./../constants/index";
+import { ConversionMethod } from "./../constants/index";
 
-function ConversionMethod({
+type ConversionMethodProps = {
+  conversionMethod: ConversionMethod;
+  setConversionMethod: React.Dispatch<React.SetStateAction<ConversionMethod>>;
+};
+
+const ConversionMethodSelector = ({
   conversionMethod,
   setConversionMethod,
-}: {
-  conversionMethod: Method;
-  setConversionMethod: React.Dispatch<React.SetStateAction<Method>>;
-}) {
+}: ConversionMethodProps) => {
   return (
     <div className="conversion-method">
       <label>
         Conversion Method:
         <select
           value={conversionMethod}
-          onChange={(e) => setConversionMethod(e.target.value as Method)}
+          onChange={(e) =>
+            setConversionMethod(e.target.value as ConversionMethod)
+          }
         >
           <option value="leftToRight">Left to Right, Top to Bottom</option>
           <option value="topToBottomLeft">Top to Bottom, Left to Right</option>
@@ -22,6 +26,6 @@ function ConversionMethod({
       </label>
     </div>
   );
-}
+};
 
-export default ConversionMethod;
+export default ConversionMethodSelector;
