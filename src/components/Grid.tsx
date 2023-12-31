@@ -1,11 +1,11 @@
-import { Color } from "./../constants/index";
+import { Color } from "./../types";
 
 type GridProps = {
   pixels: Color[][];
-  handlePixelClick: (row: number, col: number) => void;
+  onPixelClick: (row: number, col: number) => void;
 };
 
-const Grid = ({ pixels, handlePixelClick }: GridProps) => {
+const Grid = ({ pixels, onPixelClick }: GridProps) => {
   return (
     <div className="grid">
       {pixels.map((row, rowIndex) => (
@@ -14,7 +14,7 @@ const Grid = ({ pixels, handlePixelClick }: GridProps) => {
             <div
               key={colIndex}
               className={`pixel ${color}`}
-              onClick={() => handlePixelClick(rowIndex, colIndex)}
+              onClick={() => onPixelClick(rowIndex, colIndex)}
             ></div>
           ))}
         </div>

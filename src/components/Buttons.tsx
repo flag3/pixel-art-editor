@@ -1,23 +1,23 @@
-import { Color } from "./../constants/index";
+import { Color } from "./../types";
 
 type ButtonsProps = {
-  undo: () => void;
-  redo: () => void;
-  resetPixels: () => void;
-  exportToImage: () => void;
-  importFromImage: (event: React.ChangeEvent<HTMLInputElement>) => void;
   undoStack: Color[][][];
   redoStack: Color[][][];
+  upload: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  undo: () => void;
+  redo: () => void;
+  deleteGridContents: () => void;
+  download: () => void;
 };
 
 const Buttons = ({
-  undo,
-  redo,
-  resetPixels,
-  exportToImage,
-  importFromImage,
   undoStack,
   redoStack,
+  upload,
+  undo,
+  redo,
+  deleteGridContents,
+  download,
 }: ButtonsProps) => {
   return (
     <div className="button-container">
@@ -26,7 +26,7 @@ const Buttons = ({
           type="file"
           id="fileInput"
           className="hidden-input"
-          onChange={importFromImage}
+          onChange={upload}
         />
         <button onClick={() => document.getElementById("fileInput")!.click()}>
           <span className="material-icons-outlined">upload</span>
@@ -38,10 +38,10 @@ const Buttons = ({
       <button onClick={redo} disabled={!redoStack.length}>
         <span className="material-icons-outlined">redo</span>
       </button>
-      <button onClick={resetPixels}>
+      <button onClick={deleteGridContents}>
         <span className="material-icons-outlined">delete</span>
       </button>
-      <button onClick={exportToImage}>
+      <button onClick={download}>
         <span className="material-icons-outlined">download</span>
       </button>
     </div>

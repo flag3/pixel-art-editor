@@ -1,4 +1,4 @@
-import { ConversionMethod } from "./../constants/index";
+import { ConversionMethod } from "./../types";
 
 type ConversionMethodProps = {
   conversionMethod: ConversionMethod;

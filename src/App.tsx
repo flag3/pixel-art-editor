@@ -1,74 +1,77 @@
-import { useState } from "react";
 import ColorModeSelector from "./components/ColorModeSelector";
 import ColorPicker from "./components/ColorPicker";
 import Grid from "./components/Grid";
-import GridSize from "./components/GridSize";
+import GridSizeSelector from "./components/GridSizeSelector";
 import Buttons from "./components/Buttons";
-import ConversionMethodSelector from "./components/ConversionMethod";
+import ConversionMethodSelector from "./components/ConversionMethodSelector";
 import HexConverter from "./components/HexConverter";
-import { handleExport, handleImport } from "./utils/hexUtils";
-import { exportToImage, importFromImage } from "./utils/imageUtils";
-import { useUndoRedo } from "./hooks/useUndoRedo";
-import {
-  Color,
-  ConversionMethod,
-  ColorMode,
-  createInitialPixels,
-} from "./constants/index";
+import usePixelOperations from "./hooks/usePixelOperations";
+import useUIState from "./hooks/useUIState";
+import useFileOperations from "./hooks/useFileOperations";
 import "./App.css";
 
 function App() {
-  const [colorMode, setColorMode] = useState<ColorMode>("fourColors");
-  const [selectedColor, setSelectedColor] = useState<Color>("white");
-  const [conversionMethod, setConversionMethod] =
-    useState<ConversionMethod>("leftToRight");
-  const [hexValue, setHexValue] = useState("");
   const {
     gridSize,
     setGridSize,
+    selectedColor,
+    setSelectedColor,
     pixels,
     setPixels,
     undoStack,
+    setUndoStack,
     redoStack,
-    clearUndoRedo,
+    setRedoStack,
     applyChange,
+    handlePixelClick,
     undo,
     redo,
-  } = useUndoRedo();
+    deleteGridContents,
+  } = usePixelOperations();
+
+  const {
+    colorMode,
+    setColorMode,
+    conversionMethod,
+    setConversionMethod,
+    hexValue,
+    setHexValue,
+    convertPixelToHex,
+    convertHexToPixel,
+  } = useUIState(gridSize, pixels, applyChange);
+
+  const { upload, download } = useFileOperations(
+    colorMode,
+    gridSize,
+    pixels,
+    applyChange,
+  );
 
   return (
     <div className="container">
       <ColorModeSelector colorMode={colorMode} setColorMode={setColorMode} />
-      <GridSize
+      <GridSizeSelector
         gridSize={gridSize}
         setGridSize={setGridSize}
+        setHexValue={setHexValue}
         setPixels={setPixels}
-        clearUndoRedo={clearUndoRedo}
-        clearHexValue={() => setHexValue("")}
+        setUndoStack={setUndoStack}
+        setRedoStack={setRedoStack}
       />
       <ColorPicker
+        colorMode={colorMode}
         selectedColor={selectedColor}
         setSelectColor={setSelectedColor}
-        colorMode={colorMode}
       />
-      <Grid
-        pixels={pixels}
-        handlePixelClick={(row: number, col: number) => {
-          const newPixels = pixels.map((row) => row.slice());
-          newPixels[row][col] = selectedColor;
-          applyChange(newPixels);
-        }}
-      />
+      <Grid pixels={pixels} onPixelClick={handlePixelClick} />
       <Buttons
-        undo={undo}
-        redo={redo}
-        resetPixels={() => applyChange(createInitialPixels(gridSize))}
-        exportToImage={() => exportToImage(pixels)}
-        importFromImage={(event) =>
-          importFromImage(event, gridSize, colorMode, applyChange)
-        }
         undoStack={undoStack}
         redoStack={redoStack}
+        upload={upload}
+        undo={undo}
+        redo={redo}
+        deleteGridContents={deleteGridContents}
+        download={download}
       />
       <ConversionMethodSelector
         conversionMethod={conversionMethod}
@@ -77,20 +80,10 @@ function App() {
       <HexConverter
         hexValue={hexValue}
         setHexValue={setHexValue}
-        size={gridSize}
         colorMode={colorMode}
-        handleExport={() =>
-          handleExport(pixels, conversionMethod, colorMode, setHexValue)
-        }
-        handleImport={() =>
-          handleImport(
-            hexValue,
-            gridSize,
-            conversionMethod,
-            colorMode,
-            applyChange,
-          )
-        }
+        gridSize={gridSize}
+        convertPixelToHex={convertPixelToHex}
+        convertHexToPixel={convertHexToPixel}
       />
     </div>
   );

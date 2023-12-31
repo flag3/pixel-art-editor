@@ -1,25 +1,9 @@
-import { Color, Size, ConversionMethod, ColorMode } from "./../constants/index";
+import { Color, ColorMode, ConversionMethod, Size } from "./../types";
 
-export const handleExport = (
-  pixels: Color[][],
-  conversionMethod: ConversionMethod,
-  colorMode: ColorMode,
-  setHexValue: React.Dispatch<React.SetStateAction<string>>,
-) => {
-  const hexStrings = pixelsToHex(pixels, conversionMethod, colorMode);
-  setHexValue(hexStrings.join(" "));
-};
-
-export const handleImport = (
-  hexValue: string,
-  size: Size,
-  conversionMethod: ConversionMethod,
-  colorMode: ColorMode,
-  callback: (newPixels: Color[][]) => void,
-) => {
-  const hexStrings = splitHexValues(hexValue);
-  const newPixels = hexToPixels(hexStrings, size, conversionMethod, colorMode);
-  callback(newPixels);
+export const createInitialPixels = (size: Size): Color[][] => {
+  return Array.from({ length: size.width }, () =>
+    Array.from({ length: size.height }, () => "white"),
+  );
 };
 
 const pixelToBits = (color: Color): [number, number] => {
@@ -35,7 +19,15 @@ const pixelToBits = (color: Color): [number, number] => {
   }
 };
 
-const pixelsToHex = (
+const bitsToPixel = (bit1: string, bit2: string): Color => {
+  if (bit1 === "0" && bit2 === "0") return "white";
+  if (bit1 === "1" && bit2 === "0") return "lightgray";
+  if (bit1 === "0" && bit2 === "1") return "darkgray";
+  if (bit1 === "1" && bit2 === "1") return "black";
+  throw new Error("Invalid bits combination");
+};
+
+export const pixelsToHex = (
   pixels: Color[][],
   conversionMethod: ConversionMethod,
   colorMode: ColorMode,
@@ -101,36 +93,7 @@ const pixelsToHex = (
   return hexes;
 };
 
-const splitHexValues = (hexValue: string): string[] => {
-  const cleanedHexValue = hexValue.replace(/\s+/g, "");
-
-  if (/[^a-fA-F0-9]/.test(cleanedHexValue)) {
-    alert("Invalid characters detected in the HEX string.");
-    throw new Error("Invalid characters in HEX string");
-  }
-
-  if (cleanedHexValue.length % 2 !== 0) {
-    alert("The HEX string has an odd number of characters.");
-    throw new Error("Odd number of characters in HEX string");
-  }
-
-  const hexes: string[] = [];
-  for (let i = 0; i < cleanedHexValue.length; i += 2) {
-    hexes.push(cleanedHexValue.substring(i, i + 2));
-  }
-
-  return hexes;
-};
-
-const bitsToPixel = (bit1: string, bit2: string): Color => {
-  if (bit1 === "0" && bit2 === "0") return "white";
-  if (bit1 === "1" && bit2 === "0") return "lightgray";
-  if (bit1 === "0" && bit2 === "1") return "darkgray";
-  if (bit1 === "1" && bit2 === "1") return "black";
-  throw new Error("Invalid bits combination");
-};
-
-const hexToPixels = (
+export const hexToPixels = (
   hexes: string[],
   size: Size,
   conversionMethod: ConversionMethod,
@@ -207,4 +170,25 @@ const hexToPixels = (
   }
 
   return pixels;
+};
+
+export const splitHexValues = (hexValue: string): string[] => {
+  const cleanedHexValue = hexValue.replace(/\s+/g, "");
+
+  if (/[^a-fA-F0-9]/.test(cleanedHexValue)) {
+    alert("Invalid characters detected in the HEX string.");
+    throw new Error("Invalid characters in HEX string");
+  }
+
+  if (cleanedHexValue.length % 2 !== 0) {
+    alert("The HEX string has an odd number of characters.");
+    throw new Error("Odd number of characters in HEX string");
+  }
+
+  const hexes: string[] = [];
+  for (let i = 0; i < cleanedHexValue.length; i += 2) {
+    hexes.push(cleanedHexValue.substring(i, i + 2));
+  }
+
+  return hexes;
 };

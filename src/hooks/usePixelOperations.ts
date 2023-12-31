@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Color, Size, createInitialPixels } from "./../constants/index";
+import { Color, Size } from "./../types";
+import { createInitialPixels } from "./../utils/hexUtils";
 
-export const useUndoRedo = () => {
+const usePixelOperations = () => {
   const [gridSize, setGridSize] = useState<Size>({ width: 16, height: 16 });
+  const [selectedColor, setSelectedColor] = useState<Color>("white");
   const [pixels, setPixels] = useState(() => createInitialPixels(gridSize));
   const [undoStack, setUndoStack] = useState<Color[][][]>([]);
   const [redoStack, setRedoStack] = useState<Color[][][]>([]);
@@ -11,6 +13,12 @@ export const useUndoRedo = () => {
     setRedoStack([]);
     setUndoStack((prevStack) => [...prevStack, pixels]);
     setPixels(newPixels);
+  };
+
+  const handlePixelClick = (rowIndex: number, colIndex: number) => {
+    const newPixels = pixels.map((row) => row.slice());
+    newPixels[rowIndex][colIndex] = selectedColor;
+    applyChange(newPixels);
   };
 
   const undo = () => {
@@ -31,21 +39,27 @@ export const useUndoRedo = () => {
     setRedoStack((prevStack) => prevStack.slice(0, prevStack.length - 1));
   };
 
-  const clearUndoRedo = () => {
-    setUndoStack([]);
-    setRedoStack([]);
+  const deleteGridContents = () => {
+    applyChange(createInitialPixels(gridSize));
   };
 
   return {
     gridSize,
     setGridSize,
+    selectedColor,
+    setSelectedColor,
     pixels,
     setPixels,
     undoStack,
+    setUndoStack,
     redoStack,
-    clearUndoRedo,
+    setRedoStack,
     applyChange,
+    handlePixelClick,
     undo,
     redo,
+    deleteGridContents,
   };
 };
+
+export default usePixelOperations;

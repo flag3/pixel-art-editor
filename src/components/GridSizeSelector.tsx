@@ -1,26 +1,26 @@
-import {
-  Color,
-  Size,
-  createInitialPixels,
-  widths,
-  heights,
-} from "./../constants/index";
+import { Color, Size } from "./../types";
+import { createInitialPixels } from "./../utils/hexUtils";
 
-type GridSizeProps = {
+const widths = Array.from({ length: 20 }, (_, i) => 8 * (i + 1));
+const heights = Array.from({ length: 18 }, (_, i) => 8 * (i + 1));
+
+type GridSizeSelectorProps = {
   gridSize: Size;
   setGridSize: React.Dispatch<React.SetStateAction<Size>>;
+  setHexValue: React.Dispatch<React.SetStateAction<string>>;
   setPixels: React.Dispatch<React.SetStateAction<Color[][]>>;
-  clearUndoRedo: () => void;
-  clearHexValue: () => void;
+  setUndoStack: React.Dispatch<React.SetStateAction<Color[][][]>>;
+  setRedoStack: React.Dispatch<React.SetStateAction<Color[][][]>>;
 };
 
-const GridSize = ({
+const GridSizeSelector = ({
   gridSize,
   setGridSize,
+  setHexValue,
   setPixels,
-  clearUndoRedo,
-  clearHexValue,
-}: GridSizeProps) => {
+  setUndoStack,
+  setRedoStack,
+}: GridSizeSelectorProps) => {
   return (
     <div className="grid-size-selector">
       <label>
@@ -38,8 +38,9 @@ const GridSize = ({
                 height: gridSize.height,
               }),
             );
-            clearUndoRedo();
-            clearHexValue();
+            setUndoStack([]);
+            setRedoStack([]);
+            () => setHexValue("");
           }}
         >
           {widths.map((num) => (
@@ -64,8 +65,9 @@ const GridSize = ({
                 height: Number(e.target.value),
               }),
             );
-            clearUndoRedo();
-            clearHexValue();
+            setUndoStack([]);
+            setRedoStack([]);
+            () => setHexValue("");
           }}
         >
           {heights.map((num) => (
@@ -79,4 +81,4 @@ const GridSize = ({
   );
 };
 
-export default GridSize;
+export default GridSizeSelector;

@@ -1,32 +1,34 @@
-import { Size, ColorMode } from "./../constants/index";
+import { ColorMode, Size } from "./../types";
 
 type HexConverterProps = {
   hexValue: string;
   setHexValue: React.Dispatch<React.SetStateAction<string>>;
-  size: Size;
   colorMode: ColorMode;
-  handleExport: () => void;
-  handleImport: () => void;
+  gridSize: Size;
+  convertPixelToHex: () => void;
+  convertHexToPixel: () => void;
 };
 
 const HexConverter = ({
   hexValue,
   setHexValue,
-  size,
   colorMode,
-  handleExport,
-  handleImport,
+  gridSize,
+  convertPixelToHex,
+  convertHexToPixel,
 }: HexConverterProps) => {
   return (
     <div>
-      <button onClick={handleExport}>To Hex</button>
+      <button onClick={convertPixelToHex}>To Hex</button>
       <textarea
         value={hexValue}
         onChange={(e) => setHexValue(e.target.value)}
-        rows={colorMode === "fourColors" ? size.height / 4 : size.height / 8}
-        cols={size.width * 3}
+        rows={
+          colorMode === "fourColors" ? gridSize.height / 4 : gridSize.height / 8
+        }
+        cols={gridSize.width * 3}
       />
-      <button onClick={handleImport}>From Hex</button>
+      <button onClick={convertHexToPixel}>From Hex</button>
     </div>
   );
 };

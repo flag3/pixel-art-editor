@@ -1,4 +1,4 @@
-import { ColorMode } from "./../constants/index";
+import { ColorMode } from "./../types";
 
 type ColorModeSelectorProps = {
   colorMode: ColorMode;
