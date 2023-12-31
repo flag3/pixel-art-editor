@@ -12,12 +12,12 @@ const useUIState = (
     useState<ConversionMethod>("leftToRight");
   const [hexValue, setHexValue] = useState("");
 
-  const convertPixelToHex = () => {
+  const handlePixelCode = () => {
     const hexStrings = pixelsToHex(pixels, conversionMethod, colorMode);
     setHexValue(hexStrings.join(" "));
   };
 
-  const convertHexToPixel = () => {
+  const handleHexGridOn = () => {
     const hexStrings = splitHexValues(hexValue);
     const newPixels = hexToPixels(
       hexStrings,
@@ -35,8 +35,8 @@ const useUIState = (
     setConversionMethod,
     hexValue,
     setHexValue,
-    convertPixelToHex,
-    convertHexToPixel,
+    handlePixelCode,
+    handleHexGridOn,
   };
 };
 

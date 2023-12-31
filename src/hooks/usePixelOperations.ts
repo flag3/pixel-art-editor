@@ -21,7 +21,7 @@ const usePixelOperations = () => {
     applyChange(newPixels);
   };
 
-  const undo = () => {
+  const handlePixelUndo = () => {
     if (!undoStack.length) return;
 
     setRedoStack((prevStack) => [...prevStack, pixels]);
@@ -30,7 +30,7 @@ const usePixelOperations = () => {
     setUndoStack((prevStack) => prevStack.slice(0, prevStack.length - 1));
   };
 
-  const redo = () => {
+  const handlePixelRedo = () => {
     if (!redoStack.length) return;
 
     setUndoStack((prevStack) => [...prevStack, pixels]);
@@ -39,7 +39,7 @@ const usePixelOperations = () => {
     setRedoStack((prevStack) => prevStack.slice(0, prevStack.length - 1));
   };
 
-  const deleteGridContents = () => {
+  const handlePixelDelete = () => {
     applyChange(createInitialPixels(gridSize));
   };
 
@@ -56,9 +56,9 @@ const usePixelOperations = () => {
     setRedoStack,
     applyChange,
     handlePixelClick,
-    undo,
-    redo,
-    deleteGridContents,
+    handlePixelUndo,
+    handlePixelRedo,
+    handlePixelDelete,
   };
 };
 

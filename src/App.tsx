@@ -2,7 +2,8 @@ import ColorModeSelector from "./components/ColorModeSelector";
 import ColorPicker from "./components/ColorPicker";
 import Grid from "./components/Grid";
 import GridSizeSelector from "./components/GridSizeSelector";
-import Buttons from "./components/Buttons";
+import FileUploader from "./components/FileUploader";
+import Button from "./components/Button";
 import ConversionMethodSelector from "./components/ConversionMethodSelector";
 import HexConverter from "./components/HexConverter";
 import usePixelOperations from "./hooks/usePixelOperations";
@@ -24,9 +25,9 @@ function App() {
     setRedoStack,
     applyChange,
     handlePixelClick,
-    undo,
-    redo,
-    deleteGridContents,
+    handlePixelUndo,
+    handlePixelRedo,
+    handlePixelDelete,
   } = usePixelOperations();
 
   const {
@@ -36,11 +37,11 @@ function App() {
     setConversionMethod,
     hexValue,
     setHexValue,
-    convertPixelToHex,
-    convertHexToPixel,
+    handlePixelCode,
+    handleHexGridOn,
   } = useUIState(gridSize, pixels, applyChange);
 
-  const { upload, download } = useFileOperations(
+  const { handleFileUpload, handleFileDownload } = useFileOperations(
     colorMode,
     gridSize,
     pixels,
@@ -64,26 +65,34 @@ function App() {
         setSelectColor={setSelectedColor}
       />
       <Grid pixels={pixels} onPixelClick={handlePixelClick} />
-      <Buttons
-        undoStack={undoStack}
-        redoStack={redoStack}
-        upload={upload}
-        undo={undo}
-        redo={redo}
-        deleteGridContents={deleteGridContents}
-        download={download}
-      />
+      <div className="button-container">
+        <FileUploader onFileUpload={handleFileUpload} />
+        <Button
+          text="undo"
+          onClick={handlePixelUndo}
+          disabled={!undoStack.length}
+        />
+        <Button
+          text="redo"
+          onClick={handlePixelRedo}
+          disabled={!redoStack.length}
+        />
+        <Button text="delete" onClick={handlePixelDelete} />
+        <Button text="download" onClick={handleFileDownload} />
+      </div>
       <ConversionMethodSelector
         conversionMethod={conversionMethod}
         setConversionMethod={setConversionMethod}
       />
+      <div className="button-container">
+        <Button text="code" onClick={handlePixelCode} />
+        <Button text="grid_on" onClick={handleHexGridOn} />
+      </div>
       <HexConverter
         hexValue={hexValue}
         setHexValue={setHexValue}
         colorMode={colorMode}
         gridSize={gridSize}
-        convertPixelToHex={convertPixelToHex}
-        convertHexToPixel={convertHexToPixel}
       />
     </div>
   );

@@ -5,8 +5,6 @@ type HexConverterProps = {
   setHexValue: React.Dispatch<React.SetStateAction<string>>;
   colorMode: ColorMode;
   gridSize: Size;
-  convertPixelToHex: () => void;
-  convertHexToPixel: () => void;
 };
 
 const HexConverter = ({
@@ -14,22 +12,16 @@ const HexConverter = ({
   setHexValue,
   colorMode,
   gridSize,
-  convertPixelToHex,
-  convertHexToPixel,
 }: HexConverterProps) => {
   return (
-    <div>
-      <button onClick={convertPixelToHex}>To Hex</button>
-      <textarea
-        value={hexValue}
-        onChange={(e) => setHexValue(e.target.value)}
-        rows={
-          colorMode === "fourColors" ? gridSize.height / 4 : gridSize.height / 8
-        }
-        cols={gridSize.width * 3}
-      />
-      <button onClick={convertHexToPixel}>From Hex</button>
-    </div>
+    <textarea
+      value={hexValue}
+      onChange={(e) => setHexValue(e.target.value)}
+      rows={
+        colorMode === "fourColors" ? gridSize.height / 4 : gridSize.height / 8
+      }
+      cols={gridSize.width * 3}
+    />
   );
 };
 

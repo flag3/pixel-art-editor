@@ -7,7 +7,7 @@ const useFileOperations = (
   pixels: Color[][],
   applyChange: (pixels: Color[][]) => void,
 ) => {
-  const upload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
 
@@ -61,7 +61,7 @@ const useFileOperations = (
     reader.readAsDataURL(file);
   };
 
-  const download = () => {
+  const handleFileDownload = () => {
     const canvas = document.createElement("canvas");
     canvas.width = pixels.length;
     canvas.height = pixels[0].length;
@@ -83,7 +83,7 @@ const useFileOperations = (
     link.click();
   };
 
-  return { upload, download };
+  return { handleFileUpload, handleFileDownload };
 };
 
 export default useFileOperations;
