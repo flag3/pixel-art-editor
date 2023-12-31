@@ -4,13 +4,13 @@ import { colorsByMode } from "./../utils/colorUtils";
 type ColorPickerProps = {
   colorMode: ColorMode;
   selectedColor: Color;
-  setSelectColor: React.Dispatch<React.SetStateAction<Color>>;
+  setSelectedColor: React.Dispatch<React.SetStateAction<Color>>;
 };
 
 const ColorPicker = ({
   colorMode,
   selectedColor,
-  setSelectColor,
+  setSelectedColor,
 }: ColorPickerProps) => {
   return (
     <div className="color-picker">
@@ -20,7 +20,7 @@ const ColorPicker = ({
           className={`color-swatch ${color} ${
             selectedColor === color ? "selected" : ""
           }`}
-          onClick={() => setSelectColor(color)}
+          onClick={() => setSelectedColor(color)}
         ></div>
       ))}
     </div>

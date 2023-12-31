@@ -1,13 +1,53 @@
 import { useState } from "react";
-import { Color, Size } from "./../types";
+import { Color, ColorMode, Size } from "./../types";
 import { createInitialPixels } from "./../utils/hexUtils";
 
-const usePixelOperations = () => {
+type usePixelOperationsProps = {
+  selectedColor: Color;
+  setHexValue: React.Dispatch<React.SetStateAction<string>>;
+};
+
+const usePixelOperations = ({
+  selectedColor,
+  setHexValue,
+}: usePixelOperationsProps) => {
+  const [colorMode, setColorMode] = useState<ColorMode>("fourColors");
   const [gridSize, setGridSize] = useState<Size>({ width: 16, height: 16 });
-  const [selectedColor, setSelectedColor] = useState<Color>("white");
   const [pixels, setPixels] = useState(() => createInitialPixels(gridSize));
   const [undoStack, setUndoStack] = useState<Color[][][]>([]);
   const [redoStack, setRedoStack] = useState<Color[][][]>([]);
+
+  const handleColorModeChange = (
+    event: React.ChangeEvent<HTMLSelectElement>,
+  ) => {
+    setColorMode(event.target.value as ColorMode);
+  };
+
+  const handleWidthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setGridSize((prev) => ({ ...prev, width: Number(e.target.value) }));
+    setPixels(
+      createInitialPixels({
+        width: Number(e.target.value),
+        height: gridSize.height,
+      }),
+    );
+    setUndoStack([]);
+    setRedoStack([]);
+    () => setHexValue("");
+  };
+
+  const handleHeightChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setGridSize((prev) => ({ ...prev, height: Number(e.target.value) }));
+    setPixels(
+      createInitialPixels({
+        width: gridSize.width,
+        height: Number(e.target.value),
+      }),
+    );
+    setUndoStack([]);
+    setRedoStack([]);
+    () => setHexValue("");
+  };
 
   const applyChange = (newPixels: Color[][]) => {
     setRedoStack([]);
@@ -44,17 +84,15 @@ const usePixelOperations = () => {
   };
 
   return {
+    colorMode,
     gridSize,
-    setGridSize,
-    selectedColor,
-    setSelectedColor,
     pixels,
-    setPixels,
     undoStack,
-    setUndoStack,
     redoStack,
-    setRedoStack,
     applyChange,
+    handleColorModeChange,
+    handleWidthChange,
+    handleHeightChange,
     handlePixelClick,
     handlePixelUndo,
     handlePixelRedo,

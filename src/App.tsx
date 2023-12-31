@@ -1,68 +1,90 @@
-import ColorModeSelector from "./components/ColorModeSelector";
+import { useState } from "react";
+import Button from "./components/Button";
+import Selector from "./components/Selector";
 import ColorPicker from "./components/ColorPicker";
 import Grid from "./components/Grid";
-import GridSizeSelector from "./components/GridSizeSelector";
 import FileUploader from "./components/FileUploader";
-import Button from "./components/Button";
-import ConversionMethodSelector from "./components/ConversionMethodSelector";
 import HexConverter from "./components/HexConverter";
 import usePixelOperations from "./hooks/usePixelOperations";
-import useUIState from "./hooks/useUIState";
 import useFileOperations from "./hooks/useFileOperations";
+import useHexOperations from "./hooks/useHexOperations";
+import {
+  Color,
+  colorModeOptions,
+  conversionMethodOptions,
+  widthOptions,
+  heightOptions,
+} from "./types";
 import "./App.css";
 
 function App() {
+  const [selectedColor, setSelectedColor] = useState<Color>("white");
+  const [hexValue, setHexValue] = useState("");
+
   const {
+    colorMode,
     gridSize,
-    setGridSize,
-    selectedColor,
-    setSelectedColor,
     pixels,
-    setPixels,
     undoStack,
-    setUndoStack,
     redoStack,
-    setRedoStack,
     applyChange,
+    handleColorModeChange,
+    handleWidthChange,
+    handleHeightChange,
     handlePixelClick,
     handlePixelUndo,
     handlePixelRedo,
     handlePixelDelete,
-  } = usePixelOperations();
+  } = usePixelOperations({ selectedColor, setHexValue });
 
-  const {
-    colorMode,
-    setColorMode,
-    conversionMethod,
-    setConversionMethod,
-    hexValue,
-    setHexValue,
-    handlePixelCode,
-    handleHexGridOn,
-  } = useUIState(gridSize, pixels, applyChange);
-
-  const { handleFileUpload, handleFileDownload } = useFileOperations(
+  const { handleFileUpload, handleFileDownload } = useFileOperations({
     colorMode,
     gridSize,
     pixels,
     applyChange,
-  );
+  });
+
+  const {
+    conversionMethod,
+    handleConversionMethodChange,
+    handlePixelCode,
+    handleHexGridOn,
+  } = useHexOperations({
+    colorMode,
+    gridSize,
+    pixels,
+    hexValue,
+    setHexValue,
+    applyChange,
+  });
 
   return (
     <div className="container">
-      <ColorModeSelector colorMode={colorMode} setColorMode={setColorMode} />
-      <GridSizeSelector
-        gridSize={gridSize}
-        setGridSize={setGridSize}
-        setHexValue={setHexValue}
-        setPixels={setPixels}
-        setUndoStack={setUndoStack}
-        setRedoStack={setRedoStack}
+      <Selector
+        className="color-mode-selector"
+        label="Color Mode "
+        value={colorMode}
+        onChange={handleColorModeChange}
+        options={colorModeOptions}
       />
+      <div className="grid-size-selector">
+        <Selector
+          label="Width "
+          value={gridSize.width.toString()}
+          onChange={handleWidthChange}
+          options={widthOptions}
+        />
+        <Selector
+          label="Height "
+          value={gridSize.height.toString()}
+          onChange={handleHeightChange}
+          options={heightOptions}
+        />
+      </div>
       <ColorPicker
         colorMode={colorMode}
         selectedColor={selectedColor}
-        setSelectColor={setSelectedColor}
+        setSelectedColor={setSelectedColor}
       />
       <Grid pixels={pixels} onPixelClick={handlePixelClick} />
       <div className="button-container">
@@ -80,9 +102,12 @@ function App() {
         <Button text="delete" onClick={handlePixelDelete} />
         <Button text="download" onClick={handleFileDownload} />
       </div>
-      <ConversionMethodSelector
-        conversionMethod={conversionMethod}
-        setConversionMethod={setConversionMethod}
+      <Selector
+        className="conversion-method"
+        label="Conversion Method "
+        value={conversionMethod}
+        onChange={handleConversionMethodChange}
+        options={conversionMethodOptions}
       />
       <div className="button-container">
         <Button text="code" onClick={handlePixelCode} />

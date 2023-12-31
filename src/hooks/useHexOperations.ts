@@ -2,15 +2,31 @@ import { useState } from "react";
 import { Color, ColorMode, ConversionMethod, Size } from "./../types";
 import { pixelsToHex, hexToPixels, splitHexValues } from "./../utils/hexUtils";
 
-const useUIState = (
-  gridSize: Size,
-  pixels: Color[][],
-  applyChange: (pixels: Color[][]) => void,
-) => {
-  const [colorMode, setColorMode] = useState<ColorMode>("fourColors");
+type useHexOperationsProps = {
+  colorMode: ColorMode;
+  gridSize: Size;
+  pixels: Color[][];
+  hexValue: string;
+  setHexValue: React.Dispatch<React.SetStateAction<string>>;
+  applyChange: (pixels: Color[][]) => void;
+};
+
+const useHexOperations = ({
+  colorMode,
+  gridSize,
+  pixels,
+  hexValue,
+  setHexValue,
+  applyChange,
+}: useHexOperationsProps) => {
   const [conversionMethod, setConversionMethod] =
     useState<ConversionMethod>("leftToRight");
-  const [hexValue, setHexValue] = useState("");
+
+  const handleConversionMethodChange = (
+    event: React.ChangeEvent<HTMLSelectElement>,
+  ) => {
+    setConversionMethod(event.target.value as ConversionMethod);
+  };
 
   const handlePixelCode = () => {
     const hexStrings = pixelsToHex(pixels, conversionMethod, colorMode);
@@ -29,15 +45,11 @@ const useUIState = (
   };
 
   return {
-    colorMode,
-    setColorMode,
     conversionMethod,
-    setConversionMethod,
-    hexValue,
-    setHexValue,
+    handleConversionMethodChange,
     handlePixelCode,
     handleHexGridOn,
   };
 };
 
-export default useUIState;
+export default useHexOperations;

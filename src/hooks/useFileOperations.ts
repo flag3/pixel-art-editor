@@ -1,12 +1,19 @@
 import { Color, ColorMode, Size } from "./../types";
 import { getClosestColor } from "./../utils/colorUtils";
 
-const useFileOperations = (
-  colorMode: ColorMode,
-  gridSize: Size,
-  pixels: Color[][],
-  applyChange: (pixels: Color[][]) => void,
-) => {
+type useFileOperationsProps = {
+  colorMode: ColorMode;
+  gridSize: Size;
+  pixels: Color[][];
+  applyChange: (pixels: Color[][]) => void;
+};
+
+const useFileOperations = ({
+  colorMode,
+  gridSize,
+  pixels,
+  applyChange,
+}: useFileOperationsProps) => {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
