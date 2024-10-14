@@ -50,6 +50,9 @@ const usePixelOperations = ({
   };
 
   const applyChange = (newPixels: Color[][]) => {
+    const isSameAsPrevious =
+      JSON.stringify(pixels) === JSON.stringify(newPixels);
+    if (isSameAsPrevious) return;
     setRedoStack([]);
     setUndoStack((prevStack) => [...prevStack, pixels]);
     setPixels(newPixels);

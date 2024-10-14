@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Color } from "./../types";
 
 type GridProps = {
@@ -23,6 +23,16 @@ const Grid = ({ pixels, onPixelClick }: GridProps) => {
       onPixelClick(row, col);
     }
   };
+
+  useEffect(() => {
+    window.addEventListener("mouseup", handleEnd);
+    window.addEventListener("touchend", handleEnd);
+
+    return () => {
+      window.removeEventListener("mouseup", handleEnd);
+      window.removeEventListener("touchend", handleEnd);
+    };
+  }, []);
 
   return (
     <div className="grid">
