@@ -2,7 +2,7 @@ import { expect, describe, it } from "vitest";
 import { Color } from "./../types";
 import { pixelsToHex, hexToPixels } from "./hexUtils.ts";
 
-const testPixel = [
+const testFourColorPixel = [
   [
     "white",
     "white",
@@ -293,7 +293,7 @@ const testPixel = [
   ],
 ] as Color[][];
 
-const testPixel2 = [
+const testTwoColorPixel = [
   [
     "white",
     "white",
@@ -592,7 +592,11 @@ describe("hexUtils", () => {
       const expected =
         "07 07 08 0F 10 1F 10 1F 3B 3C 3F 37 7F 50 7F 42 E0 E0 10 F0 08 F8 08 F8 DC 3C FC EC FE 0A FE 42 3F 32 3E 39 7F 4F 7F 4F 39 3F 16 1F 11 1F 0E 0E FC 4C 7C 9C FE F2 FE F2 9C FC 68 F8 88 F8 70 70";
 
-      const result = pixelsToHex(testPixel, conversionMethod, colorMode);
+      const result = pixelsToHex(
+        testFourColorPixel,
+        conversionMethod,
+        colorMode,
+      );
       expect(result).toEqual(expected);
     });
 
@@ -602,7 +606,11 @@ describe("hexUtils", () => {
       const expected =
         "07 07 08 0F 10 1F 10 1F 3B 3C 3F 37 7F 50 7F 42 3F 32 3E 39 7F 4F 7F 4F 39 3F 16 1F 11 1F 0E 0E E0 E0 10 F0 08 F8 08 F8 DC 3C FC EC FE 0A FE 42 FC 4C 7C 9C FE F2 FE F2 9C FC 68 F8 88 F8 70 70";
 
-      const result = pixelsToHex(testPixel, conversionMethod, colorMode);
+      const result = pixelsToHex(
+        testFourColorPixel,
+        conversionMethod,
+        colorMode,
+      );
       expect(result).toEqual(expected);
     });
 
@@ -612,7 +620,11 @@ describe("hexUtils", () => {
       const expected =
         "E0 E0 10 F0 08 F8 08 F8 DC 3C FC EC FE 0A FE 42 FC 4C 7C 9C FE F2 FE F2 9C FC 68 F8 88 F8 70 70 07 07 08 0F 10 1F 10 1F 3B 3C 3F 37 7F 50 7F 42 3F 32 3E 39 7F 4F 7F 4F 39 3F 16 1F 11 1F 0E 0E";
 
-      const result = pixelsToHex(testPixel, conversionMethod, colorMode);
+      const result = pixelsToHex(
+        testFourColorPixel,
+        conversionMethod,
+        colorMode,
+      );
       expect(result).toEqual(expected);
     });
 
@@ -622,7 +634,11 @@ describe("hexUtils", () => {
       const expected =
         "07 0F 1F 1F 3C 37 50 42 E0 F0 F8 F8 3C EC 0A 42 32 39 4F 4F 3F 1F 1F 0E 4C 9C F2 F2 FC F8 F8 70";
 
-      const result = pixelsToHex(testPixel2, conversionMethod, colorMode);
+      const result = pixelsToHex(
+        testTwoColorPixel,
+        conversionMethod,
+        colorMode,
+      );
       expect(result).toEqual(expected);
     });
 
@@ -632,7 +648,11 @@ describe("hexUtils", () => {
       const expected =
         "07 0F 1F 1F 3C 37 50 42 32 39 4F 4F 3F 1F 1F 0E E0 F0 F8 F8 3C EC 0A 42 4C 9C F2 F2 FC F8 F8 70";
 
-      const result = pixelsToHex(testPixel2, conversionMethod, colorMode);
+      const result = pixelsToHex(
+        testTwoColorPixel,
+        conversionMethod,
+        colorMode,
+      );
       expect(result).toEqual(expected);
     });
 
@@ -642,7 +662,11 @@ describe("hexUtils", () => {
       const expected =
         "E0 F0 F8 F8 3C EC 0A 42 4C 9C F2 F2 FC F8 F8 70 07 0F 1F 1F 3C 37 50 42 32 39 4F 4F 3F 1F 1F 0E";
 
-      const result = pixelsToHex(testPixel2, conversionMethod, colorMode);
+      const result = pixelsToHex(
+        testTwoColorPixel,
+        conversionMethod,
+        colorMode,
+      );
       expect(result).toEqual(expected);
     });
   });
@@ -656,7 +680,7 @@ describe("hexUtils", () => {
       const colorMode = "fourColors";
 
       const result = hexToPixels(hex, size, conversionMethod, colorMode);
-      expect(result).toStrictEqual(testPixel);
+      expect(result).toStrictEqual(testFourColorPixel);
     });
 
     it("should correctly convert hex to pixels for topToBottomLeft method with fourColors mode", () => {
@@ -667,7 +691,7 @@ describe("hexUtils", () => {
       const colorMode = "fourColors";
 
       const result = hexToPixels(hex, size, conversionMethod, colorMode);
-      expect(result).toStrictEqual(testPixel);
+      expect(result).toStrictEqual(testFourColorPixel);
     });
 
     it("should correctly convert hex to pixels for topToBottomRight method with fourColors mode", () => {
@@ -678,7 +702,7 @@ describe("hexUtils", () => {
       const colorMode = "fourColors";
 
       const result = hexToPixels(hex, size, conversionMethod, colorMode);
-      expect(result).toStrictEqual(testPixel);
+      expect(result).toStrictEqual(testFourColorPixel);
     });
 
     it("should correctly convert hex to pixels for leftToRight method with twoColors mode", () => {
@@ -689,7 +713,7 @@ describe("hexUtils", () => {
       const colorMode = "twoColors";
 
       const result = hexToPixels(hex, size, conversionMethod, colorMode);
-      expect(result).toStrictEqual(testPixel2);
+      expect(result).toStrictEqual(testTwoColorPixel);
     });
 
     it("should correctly convert hex to pixels for topToBottomLeft method with twoColors mode", () => {
@@ -700,7 +724,7 @@ describe("hexUtils", () => {
       const colorMode = "twoColors";
 
       const result = hexToPixels(hex, size, conversionMethod, colorMode);
-      expect(result).toStrictEqual(testPixel2);
+      expect(result).toStrictEqual(testTwoColorPixel);
     });
 
     it("should correctly convert hex to pixels for topToBottomRight method with twoColors mode", () => {
@@ -711,7 +735,7 @@ describe("hexUtils", () => {
       const colorMode = "twoColors";
 
       const result = hexToPixels(hex, size, conversionMethod, colorMode);
-      expect(result).toStrictEqual(testPixel2);
+      expect(result).toStrictEqual(testTwoColorPixel);
     });
   });
 });
