@@ -7,11 +7,11 @@ type ColorPickerProps = {
   setSelectedColor: React.Dispatch<React.SetStateAction<Color>>;
 };
 
-const ColorPicker = ({
+export default function ColorPicker({
   colorMode,
   selectedColor,
   setSelectedColor,
-}: ColorPickerProps) => {
+}: ColorPickerProps) {
   return (
     <div className="color-picker">
       {colorsByMode[colorMode].map((color) => (
@@ -25,6 +25,4 @@ const ColorPicker = ({
       ))}
     </div>
   );
-};
-
-export default ColorPicker;
+}

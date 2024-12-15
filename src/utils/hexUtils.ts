@@ -31,8 +31,8 @@ export const pixelsToHex = (
   pixels: Color[][],
   conversionMethod: ConversionMethod,
   colorMode: ColorMode,
-): string[] => {
-  const hexes: string[] = [];
+): string => {
+  const result: string[] = [];
   const width = pixels.length;
   const height = pixels[0].length;
 
@@ -50,14 +50,14 @@ export const pixelsToHex = (
         bin2 += bit2;
       }
       if (colorMode == "fourColors") {
-        hexes.push(
+        result.push(
           parseInt(bin1, 2).toString(16).padStart(2, "0").toUpperCase(),
         );
-        hexes.push(
+        result.push(
           parseInt(bin2, 2).toString(16).padStart(2, "0").toUpperCase(),
         );
       } else {
-        hexes.push(
+        result.push(
           parseInt(bin2, 2).toString(16).padStart(2, "0").toUpperCase(),
         );
       }
@@ -90,29 +90,46 @@ export const pixelsToHex = (
       break;
   }
 
-  return hexes;
+  return result.join(" ");
 };
 
 export const hexToPixels = (
-  hexes: string[],
+  hex: string,
   size: Size,
   conversionMethod: ConversionMethod,
   colorMode: ColorMode,
 ): Color[][] => {
-  if (colorMode === "twoColors") {
-    hexes = hexes.flatMap((n) => [n, n]);
-  }
-  const expectedLength = (size.width * size.height) / 2;
-  while (hexes.length < expectedLength) {
-    hexes.push("00");
+  const cleanedHexValue = hex.replace(/\s+/g, "");
+
+  if (/[^a-fA-F0-9]/.test(cleanedHexValue)) {
+    alert("Invalid characters detected in the HEX string.");
+    throw new Error("Invalid characters in HEX string");
   }
 
-  if (hexes.length > expectedLength) {
-    hexes = hexes.slice(0, expectedLength);
+  if (cleanedHexValue.length % 2 !== 0) {
+    alert("The HEX string has an odd number of characters.");
+    throw new Error("Odd number of characters in HEX string");
+  }
+
+  let hexArray: string[] = [];
+  for (let i = 0; i < cleanedHexValue.length; i += 2) {
+    hexArray.push(cleanedHexValue.substring(i, i + 2));
+  }
+
+  if (colorMode === "twoColors") {
+    hexArray = hexArray.flatMap((n) => [n, n]);
+  }
+  const expectedLength = (size.width * size.height) / 2;
+  while (hexArray.length < expectedLength) {
+    hexArray.push("00");
+  }
+
+  if (hexArray.length > expectedLength) {
+    hexArray = hexArray.slice(0, expectedLength);
   }
   const hexPattern = /^[0-9A-Fa-f]{2}$/;
 
-  for (const hex of hexes) {
+  for (const hex of hexArray) {
     if (!hexPattern.test(hex)) {
       alert(`Invalid HEX value detected: ${hex}. Please use valid HEX values.`);
       return Array(16)
@@ -129,10 +146,14 @@ export const hexToPixels = (
 
   const convertHexToBlock = (x_start: number, y_start: number) => {
     for (let y = y_start; y < y_start + 8; y++) {
-      const bin1 = parseInt(hexes[hexIndex], 16).toString(2).padStart(8, "0");
+      const bin1 = parseInt(hexArray[hexIndex], 16)
+        .toString(2)
+        .padStart(8, "0");
       hexIndex++;
 
-      const bin2 = parseInt(hexes[hexIndex], 16).toString(2).padStart(8, "0");
+      const bin2 = parseInt(hexArray[hexIndex], 16)
+        .toString(2)
+        .padStart(8, "0");
       hexIndex++;
 
       for (let x = x_start; x < x_start + 8; x++) {
@@ -170,25 +191,4 @@ export const hexToPixels = (
   }
 
   return pixels;
-};
-
-export const splitHexValues = (hexValue: string): string[] => {
-  const cleanedHexValue = hexValue.replace(/\s+/g, "");
-
-  if (/[^a-fA-F0-9]/.test(cleanedHexValue)) {
-    alert("Invalid characters detected in the HEX string.");
-    throw new Error("Invalid characters in HEX string");
-  }
-
-  if (cleanedHexValue.length % 2 !== 0) {
-    alert("The HEX string has an odd number of characters.");
-    throw new Error("Odd number of characters in HEX string");
-  }
-
-  const hexes: string[] = [];
-  for (let i = 0; i < cleanedHexValue.length; i += 2) {
-    hexes.push(cleanedHexValue.substring(i, i + 2));
-  }
-
-  return hexes;
 };

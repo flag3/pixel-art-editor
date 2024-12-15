@@ -6,13 +6,13 @@ type SelectorProps = {
   options: { value: string; label: string }[];
 };
 
-const Selector = ({
+export default function Selector({
   className,
   label,
   value,
   onChange,
   options,
-}: SelectorProps) => {
+}: SelectorProps) {
   return (
     <div className={className}>
       <label>
@@ -27,6 +27,4 @@ const Selector = ({
       </label>
     </div>
   );
-};
-
-export default Selector;
+}

@@ -7,7 +7,6 @@ import FileUploader from "./FileUploader";
 import HexConverter from "./HexConverter";
 import usePixelOperations from "./../hooks/usePixelOperations";
 import useFileOperations from "./../hooks/useFileOperations";
-import useHexOperations from "./../hooks/useHexOperations";
 import {
   Color,
   colorModeOptions,
@@ -15,11 +14,15 @@ import {
   widthOptions,
   heightOptions,
 } from "./../types";
+import { hexToPixels, pixelsToHex } from "./../utils/hexUtils";
+import { ConversionMethod } from "./../types";
 import "./../App.css";
 
-function App() {
+export default function PixelArtEditor() {
   const [selectedColor, setSelectedColor] = useState<Color>("white");
   const [hexValue, setHexValue] = useState("");
+  const [conversionMethod, setConversionMethod] =
+    useState<ConversionMethod>("leftToRight");
 
   const {
     colorMode,
@@ -41,20 +44,6 @@ function App() {
     colorMode,
     gridSize,
     pixels,
-    applyChange,
-  });
-
-  const {
-    conversionMethod,
-    handleConversionMethodChange,
-    handlePixelCode,
-    handleHexGridOn,
-  } = useHexOperations({
-    colorMode,
-    gridSize,
-    pixels,
-    hexValue,
-    setHexValue,
     applyChange,
   });
 
@@ -106,12 +95,26 @@ function App() {
         className="conversion-method"
         label="Conversion Method "
         value={conversionMethod}
-        onChange={handleConversionMethodChange}
+        onChange={(event) =>
+          setConversionMethod(event.target.value as ConversionMethod)
+        }
         options={conversionMethodOptions}
       />
       <div className="button-container">
-        <Button text="code" onClick={handlePixelCode} />
-        <Button text="grid_on" onClick={handleHexGridOn} />
+        <Button
+          text="code"
+          onClick={() =>
+            setHexValue(pixelsToHex(pixels, conversionMethod, colorMode))
+          }
+        />
+        <Button
+          text="grid_on"
+          onClick={() =>
+            applyChange(
+              hexToPixels(hexValue, gridSize, conversionMethod, colorMode),
+            )
+          }
+        />
       </div>
       <HexConverter
         hexValue={hexValue}
@@ -122,5 +125,3 @@ function App() {
     </div>
   );
 }
-
-export default App;

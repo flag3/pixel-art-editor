@@ -2,7 +2,7 @@ type FileUploaderProps = {
   onFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
-const FileUploader = ({ onFileUpload }: FileUploaderProps) => {
+export default function FileUploader({ onFileUpload }: FileUploaderProps) {
   return (
     <div className="file-upload-wrapper">
       <input
@@ -16,6 +16,4 @@ const FileUploader = ({ onFileUpload }: FileUploaderProps) => {
       </button>
     </div>
   );
-};
-
-export default FileUploader;
+}

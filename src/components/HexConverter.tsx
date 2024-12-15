@@ -7,12 +7,12 @@ type HexConverterProps = {
   gridSize: Size;
 };
 
-const HexConverter = ({
+export default function HexConverter({
   hexValue,
   setHexValue,
   colorMode,
   gridSize,
-}: HexConverterProps) => {
+}: HexConverterProps) {
   return (
     <textarea
       value={hexValue}
@@ -20,9 +20,7 @@ const HexConverter = ({
       rows={
         colorMode === "fourColors" ? gridSize.height / 4 : gridSize.height / 8
       }
-      cols={gridSize.width * 3}
+      cols={gridSize.width * 3 - 3}
     />
   );
-};
-
-export default HexConverter;
+}
