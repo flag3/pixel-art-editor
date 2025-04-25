@@ -7,11 +7,11 @@ type FileUploaderProps = {
   applyChange: (pixels: Color[][]) => void;
 };
 
-export default function FileUploader({
+export const FileUploader = ({
   colorMode,
   gridSize,
   applyChange,
-}: FileUploaderProps) {
+}: FileUploaderProps) => {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files && event.target.files[0];
     if (!file) return;

@@ -7,19 +7,18 @@ type ColorPickerProps = {
   setSelectedColor: React.Dispatch<React.SetStateAction<Color>>;
 };
 
-export default function ColorPicker({
+export const ColorPicker = ({
   colorMode,
   selectedColor,
   setSelectedColor,
-}: ColorPickerProps) {
+}: ColorPickerProps) => {
   return (
     <div className="color-picker">
       {colorsByMode[colorMode].map((color) => (
         <div
           key={color}
-          className={`color-swatch ${color} ${
-            selectedColor === color ? "selected" : ""
-          }`}
+          className={`color-swatch ${color} ${selectedColor === color ? "selected" : ""
+            }`}
           onClick={() => setSelectedColor(color)}
         ></div>
       ))}

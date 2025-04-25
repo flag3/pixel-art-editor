@@ -1,10 +1,10 @@
 import { useState } from "react";
-import Button from "./Button";
-import Selector from "./Selector";
-import ColorPicker from "./ColorPicker";
-import Grid from "./Grid";
-import FileUploader from "./FileUploader";
-import HexConverter from "./HexConverter";
+import { Button } from "./Button";
+import { Selector } from "./Selector";
+import { ColorPicker } from "./ColorPicker";
+import { Grid } from "./Grid";
+import { FileUploader } from "./FileUploader";
+import { HexConverter } from "./HexConverter";
 import {
   createInitialPixels,
   hexToPixels,

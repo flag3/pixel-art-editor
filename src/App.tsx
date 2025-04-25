@@ -2,11 +2,7 @@ import "./App.css";
 import PixelArtEditor from "./components/PixelArtEditor";
 
 function App() {
-  return (
-    <div>
-      <PixelArtEditor />
-    </div>
-  );
+  return <PixelArtEditor />
 }
 
 export default App;

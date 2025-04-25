@@ -6,7 +6,7 @@ type GridProps = {
   onPixelClick: (row: number, col: number) => void;
 };
 
-export default function Grid({ pixels, onPixelClick }: GridProps) {
+export const Grid = ({ pixels, onPixelClick }: GridProps) => {
   const [isMouseDown, setIsMouseDown] = useState(false);
 
   const handleStart = (row: number, col: number) => {
