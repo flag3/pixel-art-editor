@@ -680,7 +680,8 @@ describe("hexUtils", () => {
       const colorMode = "fourColors";
 
       const result = hexToPixels(hex, size, conversionMethod, colorMode);
-      expect(result).toStrictEqual(testFourColorPixel);
+      expect(result.success).toBe(true);
+      expect(result.data).toStrictEqual(testFourColorPixel);
     });
 
     it("should correctly convert hex to pixels for topToBottomLeft method with fourColors mode", () => {
@@ -691,7 +692,8 @@ describe("hexUtils", () => {
       const colorMode = "fourColors";
 
       const result = hexToPixels(hex, size, conversionMethod, colorMode);
-      expect(result).toStrictEqual(testFourColorPixel);
+      expect(result.success).toBe(true);
+      expect(result.data).toStrictEqual(testFourColorPixel);
     });
 
     it("should correctly convert hex to pixels for topToBottomRight method with fourColors mode", () => {
@@ -702,7 +704,8 @@ describe("hexUtils", () => {
       const colorMode = "fourColors";
 
       const result = hexToPixels(hex, size, conversionMethod, colorMode);
-      expect(result).toStrictEqual(testFourColorPixel);
+      expect(result.success).toBe(true);
+      expect(result.data).toStrictEqual(testFourColorPixel);
     });
 
     it("should correctly convert hex to pixels for leftToRight method with twoColors mode", () => {
@@ -713,7 +716,8 @@ describe("hexUtils", () => {
       const colorMode = "twoColors";
 
       const result = hexToPixels(hex, size, conversionMethod, colorMode);
-      expect(result).toStrictEqual(testTwoColorPixel);
+      expect(result.success).toBe(true);
+      expect(result.data).toStrictEqual(testTwoColorPixel);
     });
 
     it("should correctly convert hex to pixels for topToBottomLeft method with twoColors mode", () => {
@@ -724,7 +728,8 @@ describe("hexUtils", () => {
       const colorMode = "twoColors";
 
       const result = hexToPixels(hex, size, conversionMethod, colorMode);
-      expect(result).toStrictEqual(testTwoColorPixel);
+      expect(result.success).toBe(true);
+      expect(result.data).toStrictEqual(testTwoColorPixel);
     });
 
     it("should correctly convert hex to pixels for topToBottomRight method with twoColors mode", () => {
@@ -735,7 +740,8 @@ describe("hexUtils", () => {
       const colorMode = "twoColors";
 
       const result = hexToPixels(hex, size, conversionMethod, colorMode);
-      expect(result).toStrictEqual(testTwoColorPixel);
+      expect(result.success).toBe(true);
+      expect(result.data).toStrictEqual(testTwoColorPixel);
     });
   });
 });

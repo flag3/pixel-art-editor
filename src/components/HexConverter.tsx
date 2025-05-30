@@ -1,11 +1,4 @@
-import { ColorMode, Size } from "./../types";
-
-type HexConverterProps = {
-  hexValue: string;
-  setHexValue: React.Dispatch<React.SetStateAction<string>>;
-  colorMode: ColorMode;
-  gridSize: Size;
-};
+import { HexConverterProps } from "../types";
 
 export const HexConverter = ({
   hexValue,

@@ -1,20 +1,16 @@
-import { Color, ColorMode } from "./../types";
-import { colorsByMode } from "./../utils/colorUtils";
-
-type ColorPickerProps = {
-  colorMode: ColorMode;
-  selectedColor: Color;
-  setSelectedColor: React.Dispatch<React.SetStateAction<Color>>;
-};
+import { useMemo } from "react";
+import { ColorPickerProps } from "../types";
+import { colorsByMode } from "../utils/colorUtils";
 
 export const ColorPicker = ({
   colorMode,
   selectedColor,
   setSelectedColor,
 }: ColorPickerProps) => {
+  const availableColors = useMemo(() => colorsByMode[colorMode], [colorMode]);
   return (
     <div className="color-picker">
-      {colorsByMode[colorMode].map((color) => (
+      {availableColors.map((color) => (
         <div
           key={color}
           className={`color-swatch ${color} ${selectedColor === color ? "selected" : ""

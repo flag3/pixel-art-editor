@@ -1,30 +1,25 @@
-import { Color, ColorMode, ConversionMethod, Size } from "./../types";
+import { Color, ColorMode, ConversionMethod, Size } from "../types";
+import { COLOR_BITS, BITS_TO_COLOR } from "../constants/config";
+import { validateHexString, validateHexValue, ValidationResult } from "./errorHandling";
 
 export const createInitialPixels = (size: Size): Color[][] => {
   return Array.from({ length: size.width }, () =>
-    Array.from({ length: size.height }, () => "white"),
+    Array.from({ length: size.height }, () => "white" as Color),
   );
 };
 
 const pixelToBits = (color: Color): [number, number] => {
-  switch (color) {
-    case "white":
-      return [0, 0];
-    case "lightgray":
-      return [1, 0];
-    case "darkgray":
-      return [0, 1];
-    case "black":
-      return [1, 1];
-  }
+  const bits = COLOR_BITS[color];
+  return [bits[0], bits[1]];
 };
 
 const bitsToPixel = (bit1: string, bit2: string): Color => {
-  if (bit1 === "0" && bit2 === "0") return "white";
-  if (bit1 === "1" && bit2 === "0") return "lightgray";
-  if (bit1 === "0" && bit2 === "1") return "darkgray";
-  if (bit1 === "1" && bit2 === "1") return "black";
-  throw new Error("Invalid bits combination");
+  const key = `${bit1}${bit2}` as keyof typeof BITS_TO_COLOR;
+  const color = BITS_TO_COLOR[key];
+  if (!color) {
+    throw new Error("Invalid bits combination");
+  }
+  return color as Color;
 };
 
 export const pixelsToHex = (
@@ -98,19 +93,15 @@ export const hexToPixels = (
   size: Size,
   conversionMethod: ConversionMethod,
   colorMode: ColorMode,
-): Color[][] => {
-  const cleanedHexValue = hex.replace(/\s+/g, "");
-
-  if (/[^a-fA-F0-9]/.test(cleanedHexValue)) {
-    alert("Invalid characters detected in the HEX string.");
-    throw new Error("Invalid characters in HEX string");
+  onError?: (error: string) => void,
+): ValidationResult<Color[][]> => {
+  const hexValidation = validateHexString(hex);
+  if (!hexValidation.success) {
+    if (onError) onError(hexValidation.error!);
+    return { success: false, error: hexValidation.error };
   }
 
-  if (cleanedHexValue.length % 2 !== 0) {
-    alert("The HEX string has an odd number of characters.");
-    throw new Error("Odd number of characters in HEX string");
-  }
-
+  const cleanedHexValue = hexValidation.data!;
   let hexArray: string[] = [];
   for (let i = 0; i < cleanedHexValue.length; i += 2) {
     hexArray.push(cleanedHexValue.substring(i, i + 2));
@@ -119,6 +110,7 @@ export const hexToPixels = (
   if (colorMode === "twoColors") {
     hexArray = hexArray.flatMap((n) => [n, n]);
   }
+
   const expectedLength = (size.width * size.height) / 2;
   while (hexArray.length < expectedLength) {
     hexArray.push("00");
@@ -127,14 +119,16 @@ export const hexToPixels = (
   if (hexArray.length > expectedLength) {
     hexArray = hexArray.slice(0, expectedLength);
   }
-  const hexPattern = /^[0-9A-Fa-f]{2}$/;
 
-  for (const hex of hexArray) {
-    if (!hexPattern.test(hex)) {
-      alert(`Invalid HEX value detected: ${hex}. Please use valid HEX values.`);
-      return Array(16)
-        .fill(null)
-        .map(() => Array(16).fill("white") as Color[]);
+  for (const hexValue of hexArray) {
+    const validation = validateHexValue(hexValue);
+    if (!validation.success) {
+      if (onError) onError(validation.error!);
+      return {
+        success: false,
+        error: validation.error,
+        data: createInitialPixels({ width: 16, height: 16 }),
+      };
     }
   }
 
@@ -190,5 +184,5 @@ export const hexToPixels = (
       break;
   }
 
-  return pixels;
+  return { success: true, data: pixels };
 };

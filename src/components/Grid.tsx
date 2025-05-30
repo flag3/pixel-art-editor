@@ -1,28 +1,23 @@
-import { useEffect, useState } from "react";
-import { Color } from "./../types";
-
-type GridProps = {
-  pixels: Color[][];
-  onPixelClick: (row: number, col: number) => void;
-};
+import { useEffect, useState, useCallback } from "react";
+import { GridProps } from "../types";
 
 export const Grid = ({ pixels, onPixelClick }: GridProps) => {
   const [isMouseDown, setIsMouseDown] = useState(false);
 
-  const handleStart = (row: number, col: number) => {
+  const handleStart = useCallback((row: number, col: number) => {
     setIsMouseDown(true);
     onPixelClick(row, col);
-  };
+  }, [onPixelClick]);
 
-  const handleEnd = () => {
+  const handleEnd = useCallback(() => {
     setIsMouseDown(false);
-  };
+  }, []);
 
-  const handleMove = (row: number, col: number) => {
+  const handleMove = useCallback((row: number, col: number) => {
     if (isMouseDown) {
       onPixelClick(row, col);
     }
-  };
+  }, [isMouseDown, onPixelClick]);
 
   useEffect(() => {
     window.addEventListener("mouseup", handleEnd);
@@ -32,7 +27,7 @@ export const Grid = ({ pixels, onPixelClick }: GridProps) => {
       window.removeEventListener("mouseup", handleEnd);
       window.removeEventListener("touchend", handleEnd);
     };
-  }, []);
+  }, [handleEnd]);
 
   return (
     <div className="grid">

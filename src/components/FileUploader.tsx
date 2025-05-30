@@ -1,11 +1,5 @@
-import { Color, ColorMode, Size } from "./../types";
-import { getClosestColor } from "./../utils/colorUtils";
-
-type FileUploaderProps = {
-  colorMode: ColorMode;
-  gridSize: Size;
-  applyChange: (pixels: Color[][]) => void;
-};
+import { Color, FileUploaderProps } from "../types";
+import { getClosestColor } from "../utils/colorUtils";
 
 export const FileUploader = ({
   colorMode,

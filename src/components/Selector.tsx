@@ -1,18 +1,12 @@
-type SelectorProps = {
-  className?: string;
-  label: string;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-  options: { value: string; label: string }[];
-};
+import { SelectorProps } from "../types";
 
-export const Selector = ({
+export const Selector = <T extends string = string>({
   className,
   label,
   value,
   onChange,
   options,
-}: SelectorProps) => {
+}: SelectorProps<T>) => {
   return (
     <div className={className}>
       <label>

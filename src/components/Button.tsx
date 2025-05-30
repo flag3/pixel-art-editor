@@ -1,8 +1,4 @@
-type ButtonProps = {
-  text: string;
-  onClick: () => void;
-  disabled?: boolean;
-};
+import { ButtonProps } from "../types";
 
 export const Button = ({
   text,

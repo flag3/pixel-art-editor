@@ -1,15 +1,16 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "./Button";
 import { Selector } from "./Selector";
 import { ColorPicker } from "./ColorPicker";
 import { Grid } from "./Grid";
 import { FileUploader } from "./FileUploader";
 import { HexConverter } from "./HexConverter";
+import { usePixelState } from "../hooks/usePixelState";
 import {
   createInitialPixels,
   hexToPixels,
   pixelsToHex,
-} from "./../utils/hexUtils";
+} from "../utils/hexUtils";
 import {
   Color,
   ColorMode,
@@ -19,70 +20,38 @@ import {
   conversionMethodOptions,
   widthOptions,
   heightOptions,
-} from "./../types";
-import "./../App.css";
-
-function usePixelState(initialSize: Size) {
-  const [pixels, setPixels] = useState(() => createInitialPixels(initialSize));
-  const [undoStack, setUndoStack] = useState<Color[][][]>([]);
-  const [redoStack, setRedoStack] = useState<Color[][][]>([]);
-
-  const applyChange = (newPixels: Color[][]) => {
-    const isSameAsPrevious =
-      JSON.stringify(pixels) === JSON.stringify(newPixels);
-    if (isSameAsPrevious) return;
-    setRedoStack([]);
-    setUndoStack((prevStack) => [...prevStack, pixels]);
-    setPixels(newPixels);
-  };
-
-  const undo = () => {
-    if (!undoStack.length) return;
-    setRedoStack((prevStack) => [...prevStack, pixels]);
-    const lastState = undoStack[undoStack.length - 1];
-    setPixels(lastState);
-    setUndoStack((prevStack) => prevStack.slice(0, prevStack.length - 1));
-  };
-
-  const redo = () => {
-    if (!redoStack.length) return;
-    setUndoStack((prevStack) => [...prevStack, pixels]);
-    const nextState = redoStack[redoStack.length - 1];
-    setPixels(nextState);
-    setRedoStack((prevStack) => prevStack.slice(0, prevStack.length - 1));
-  };
-
-  return { pixels, applyChange, undo, redo, undoStack, redoStack };
-}
+} from "../types";
+import { GRID_CONFIG, DOWNLOAD_CONFIG } from "../constants/config";
+import "../App.css";
 
 export default function PixelArtEditor() {
   const [colorMode, setColorMode] = useState<ColorMode>("fourColors");
-  const [gridSize, setGridSize] = useState<Size>({ width: 16, height: 16 });
+  const [gridSize, setGridSize] = useState<Size>(GRID_CONFIG.DEFAULT_SIZE);
   const [selectedColor, setSelectedColor] = useState<Color>("white");
-  const { pixels, applyChange, undo, redo, undoStack, redoStack } =
-    usePixelState(gridSize);
-  const [conversionMethod, setConversionMethod] =
-    useState<ConversionMethod>("leftToRight");
+  const { pixels, applyChange, undo, redo, canUndo, canRedo } = usePixelState(gridSize);
+  const [conversionMethod, setConversionMethod] = useState<ConversionMethod>("leftToRight");
   const [hexValue, setHexValue] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  const handleGridSizeChange = (
+  const handleGridSizeChange = useCallback((
     dimension: "width" | "height",
     value: number,
   ) => {
-    setGridSize((prev) => ({ ...prev, [dimension]: value }));
-    applyChange(createInitialPixels({ ...gridSize, [dimension]: value }));
-  };
+    const newSize = { ...gridSize, [dimension]: value };
+    setGridSize(newSize);
+    applyChange(createInitialPixels(newSize));
+  }, [gridSize, applyChange]);
 
-  const handlePixelClick = (rowIndex: number, colIndex: number) => {
+  const handlePixelClick = useCallback((rowIndex: number, colIndex: number) => {
     const newPixels = pixels.map((row) => row.slice());
     newPixels[rowIndex][colIndex] = selectedColor;
     applyChange(newPixels);
-  };
+  }, [pixels, selectedColor, applyChange]);
 
-  const handleFileDownload = () => {
+  const handleFileDownload = useCallback(() => {
     const canvas = document.createElement("canvas");
-    canvas.width = pixels.length;
-    canvas.height = pixels[0].length;
+    canvas.width = pixels.length * DOWNLOAD_CONFIG.CANVAS_SCALE;
+    canvas.height = pixels[0].length * DOWNLOAD_CONFIG.CANVAS_SCALE;
     const ctx = canvas.getContext("2d")!;
 
     const computedStyle = getComputedStyle(document.documentElement);
@@ -90,16 +59,21 @@ export default function PixelArtEditor() {
     pixels.forEach((row, rowIndex) => {
       row.forEach((color, colIndex) => {
         ctx.fillStyle = computedStyle.getPropertyValue(`--${color}`);
-        ctx.fillRect(rowIndex, colIndex, 1, 1);
+        ctx.fillRect(
+          rowIndex * DOWNLOAD_CONFIG.CANVAS_SCALE,
+          colIndex * DOWNLOAD_CONFIG.CANVAS_SCALE,
+          DOWNLOAD_CONFIG.CANVAS_SCALE,
+          DOWNLOAD_CONFIG.CANVAS_SCALE
+        );
       });
     });
 
     const dataURL = canvas.toDataURL();
     const link = document.createElement("a");
     link.href = dataURL;
-    link.download = "pixel-art.png";
+    link.download = DOWNLOAD_CONFIG.DEFAULT_FILENAME;
     link.click();
-  };
+  }, [pixels]);
 
   return (
     <div className="container">
@@ -142,8 +116,8 @@ export default function PixelArtEditor() {
           gridSize={gridSize}
           applyChange={applyChange}
         />
-        <Button text="undo" onClick={undo} disabled={!undoStack.length} />
-        <Button text="redo" onClick={redo} disabled={!redoStack.length} />
+        <Button text="undo" onClick={undo} disabled={!canUndo} />
+        <Button text="redo" onClick={redo} disabled={!canRedo} />
         <Button
           text="delete"
           onClick={() => applyChange(createInitialPixels(gridSize))}
@@ -168,13 +142,26 @@ export default function PixelArtEditor() {
         />
         <Button
           text="grid_on"
-          onClick={() =>
-            applyChange(
-              hexToPixels(hexValue, gridSize, conversionMethod, colorMode),
-            )
-          }
+          onClick={() => {
+            const result = hexToPixels(
+              hexValue,
+              gridSize,
+              conversionMethod,
+              colorMode,
+              setError
+            );
+            if (result.success && result.data) {
+              applyChange(result.data);
+              setError(null);
+            }
+          }}
         />
       </div>
+      {error && (
+        <div className="error-message" style={{ color: 'red', margin: '10px 0' }}>
+          {error}
+        </div>
+      )}
       <HexConverter
         hexValue={hexValue}
         setHexValue={setHexValue}
