@@ -1,6 +1,7 @@
-import { Color, ColorMode, ConversionMethod, Size } from "../types";
+import { Color, ColorMode, ConversionMethod, Size, CompressionFormat } from "../types";
 import { COLOR_BITS, BITS_TO_COLOR } from "../constants/config";
 import { validateHexString, validateHexValue, ValidationResult } from "./errorHandling";
+import { decompressLZ3, parseCompressedHex } from "./lz3Decompressor";
 
 export const createInitialPixels = (size: Size): Color[][] => {
   return Array.from({ length: size.width }, () =>
@@ -185,4 +186,37 @@ export const hexToPixels = (
   }
 
   return { success: true, data: pixels };
+};
+
+export const hexToPixelsWithDecompression = (
+  hex: string,
+  size: Size,
+  conversionMethod: ConversionMethod,
+  colorMode: ColorMode,
+  compressionFormat: CompressionFormat,
+  onError?: (error: string) => void,
+): ValidationResult<Color[][]> => {
+  if (compressionFormat === "lz3") {
+    const compressedBytes = parseCompressedHex(hex);
+    if (!compressedBytes) {
+      const error = "Invalid hex format for compressed data";
+      if (onError) onError(error);
+      return { success: false, error };
+    }
+
+    try {
+      const decompressedBytes = decompressLZ3(compressedBytes);
+      const decompressedHex = Array.from(decompressedBytes)
+        .map(byte => byte.toString(16).padStart(2, "0").toUpperCase())
+        .join(" ");
+
+      return hexToPixels(decompressedHex, size, conversionMethod, colorMode, onError);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Decompression failed";
+      if (onError) onError(errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  }
+
+  return hexToPixels(hex, size, conversionMethod, colorMode, onError);
 };

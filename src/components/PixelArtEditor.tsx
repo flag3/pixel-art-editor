@@ -8,16 +8,18 @@ import { HexConverter } from "./HexConverter";
 import { usePixelState } from "../hooks/usePixelState";
 import {
   createInitialPixels,
-  hexToPixels,
   pixelsToHex,
+  hexToPixelsWithDecompression,
 } from "../utils/hexUtils";
 import {
   Color,
   ColorMode,
   ConversionMethod,
+  CompressionFormat,
   Size,
   colorModeOptions,
   conversionMethodOptions,
+  compressionFormatOptions,
   widthOptions,
   heightOptions,
 } from "../types";
@@ -30,6 +32,7 @@ export default function PixelArtEditor() {
   const [selectedColor, setSelectedColor] = useState<Color>("white");
   const { pixels, applyChange, undo, redo, canUndo, canRedo } = usePixelState(gridSize);
   const [conversionMethod, setConversionMethod] = useState<ConversionMethod>("leftToRight");
+  const [compressionFormat, setCompressionFormat] = useState<CompressionFormat>("none");
   const [hexValue, setHexValue] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -133,6 +136,15 @@ export default function PixelArtEditor() {
         }
         options={conversionMethodOptions}
       />
+      <Selector
+        className="compression-format"
+        label="Compression Format "
+        value={compressionFormat}
+        onChange={(event) =>
+          setCompressionFormat(event.target.value as CompressionFormat)
+        }
+        options={compressionFormatOptions}
+      />
       <div className="button-container">
         <Button
           text="code"
@@ -143,11 +155,12 @@ export default function PixelArtEditor() {
         <Button
           text="grid_on"
           onClick={() => {
-            const result = hexToPixels(
+            const result = hexToPixelsWithDecompression(
               hexValue,
               gridSize,
               conversionMethod,
               colorMode,
+              compressionFormat,
               setError
             );
             if (result.success && result.data) {
