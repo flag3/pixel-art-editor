@@ -2,6 +2,7 @@ import { Color, ColorMode, ConversionMethod, Size, CompressionFormat } from "../
 import { COLOR_BITS, BITS_TO_COLOR } from "../constants/config";
 import { validateHexString, validateHexValue, ValidationResult } from "./errorHandling";
 import { decompressLZ3, parseCompressedHex } from "./lz3Decompressor";
+import { compressLZ3, formatAsHex } from "./lz3Compressor";
 
 export const createInitialPixels = (size: Size): Color[][] => {
   return Array.from({ length: size.width }, () =>
@@ -27,6 +28,7 @@ export const pixelsToHex = (
   pixels: Color[][],
   conversionMethod: ConversionMethod,
   colorMode: ColorMode,
+  compressionFormat: CompressionFormat = "none",
 ): string => {
   const result: string[] = [];
   const width = pixels.length;
@@ -86,7 +88,31 @@ export const pixelsToHex = (
       break;
   }
 
-  return result.join(" ");
+  const hexString = result.join(" ");
+
+  // Apply compression if requested
+  if (compressionFormat === "lz3") {
+    try {
+      // Convert hex string to bytes
+      const hexBytes = hexString.replace(/\s+/g, "");
+      const bytes = new Uint8Array(hexBytes.length / 2);
+      for (let i = 0; i < hexBytes.length; i += 2) {
+        bytes[i / 2] = parseInt(hexBytes.substr(i, 2), 16);
+      }
+
+      // Compress the bytes
+      const compressed = compressLZ3(bytes);
+      
+      // Return formatted hex string
+      return formatAsHex(compressed);
+    } catch (error) {
+      console.error("LZ3 compression failed:", error);
+      // Fall back to uncompressed format
+      return hexString;
+    }
+  }
+
+  return hexString;
 };
 
 export const hexToPixels = (

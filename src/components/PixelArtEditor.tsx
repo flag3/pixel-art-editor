@@ -149,7 +149,7 @@ export default function PixelArtEditor() {
         <Button
           text="code"
           onClick={() =>
-            setHexValue(pixelsToHex(pixels, conversionMethod, colorMode))
+            setHexValue(pixelsToHex(pixels, conversionMethod, colorMode, compressionFormat))
           }
         />
         <Button
