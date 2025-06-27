@@ -3,6 +3,8 @@ import { COLOR_BITS, BITS_TO_COLOR } from "../constants/config";
 import { validateHexString, validateHexValue, ValidationResult } from "./errorHandling";
 import { decompressLZ3, parseCompressedHex } from "./lz3Decompressor";
 import { compressLZ3, formatAsHex } from "./lz3Compressor";
+import { compressGen1, formatGen1Hex } from "./gen1Compressor";
+import { decompressGen1, parseGen1Hex } from "./gen1Decompressor";
 
 export const createInitialPixels = (size: Size): Color[][] => {
   return Array.from({ length: size.width }, () =>
@@ -91,7 +93,7 @@ export const pixelsToHex = (
   const hexString = result.join(" ");
 
   // Apply compression if requested
-  if (compressionFormat === "lz3") {
+  if (compressionFormat === "lz3" || compressionFormat === "gen1") {
     try {
       // Convert hex string to bytes
       const hexBytes = hexString.replace(/\s+/g, "");
@@ -100,13 +102,17 @@ export const pixelsToHex = (
         bytes[i / 2] = parseInt(hexBytes.substr(i, 2), 16);
       }
 
-      // Compress the bytes
-      const compressed = compressLZ3(bytes);
-      
-      // Return formatted hex string
-      return formatAsHex(compressed);
+      if (compressionFormat === "lz3") {
+        // Compress the bytes using LZ3
+        const compressed = compressLZ3(bytes);
+        return formatAsHex(compressed);
+      } else {
+        // Compress the bytes using Pokemon Red/Blue format
+        const compressed = compressGen1(bytes);
+        return formatGen1Hex(compressed);
+      }
     } catch (error) {
-      console.error("LZ3 compression failed:", error);
+      console.error(`${compressionFormat.toUpperCase()} compression failed:`, error);
       // Fall back to uncompressed format
       return hexString;
     }
@@ -239,6 +245,20 @@ export const hexToPixelsWithDecompression = (
       return hexToPixels(decompressedHex, size, conversionMethod, colorMode, onError);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Decompression failed";
+      if (onError) onError(errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  } else if (compressionFormat === "gen1") {
+    try {
+      const compressedBytes = parseGen1Hex(hex);
+      const decompressedBytes = decompressGen1(compressedBytes);
+      const decompressedHex = Array.from(decompressedBytes)
+        .map(byte => byte.toString(16).padStart(2, "0").toUpperCase())
+        .join(" ");
+
+      return hexToPixels(decompressedHex, size, conversionMethod, colorMode, onError);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Gen1 decompression failed";
       if (onError) onError(errorMessage);
       return { success: false, error: errorMessage };
     }
