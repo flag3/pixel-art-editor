@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { decompressLZ3, parseCompressedHex } from './lz3Decompressor';
+import { decompressGen2, parseCompressedHex } from './gen2Decompressor';
 
-describe('LZ3 Decompressor', () => {
+describe('Gen2 Decompressor', () => {
   it('should parse hex string correctly', () => {
     const hexString = '00 05 48 65 6C 6C 6F FF';
     const bytes = parseCompressedHex(hexString);
@@ -16,7 +16,7 @@ describe('LZ3 Decompressor', () => {
       0xFF  // LZ_END
     ]);
 
-    const result = decompressLZ3(compressed);
+    const result = decompressGen2(compressed);
     const expected = new Uint8Array([0x48, 0x65, 0x6C, 0x6C, 0x6F]);
     expect(result).toEqual(expected);
   });
@@ -29,7 +29,7 @@ describe('LZ3 Decompressor', () => {
       0xFF  // LZ_END
     ]);
 
-    const result = decompressLZ3(compressed);
+    const result = decompressGen2(compressed);
     const expected = new Uint8Array([0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA]);
     expect(result).toEqual(expected);
   });
@@ -43,7 +43,7 @@ describe('LZ3 Decompressor', () => {
       0xFF  // LZ_END
     ]);
 
-    const result = decompressLZ3(compressed);
+    const result = decompressGen2(compressed);
     const expected = new Uint8Array([0xAA, 0xBB, 0xAA, 0xBB, 0xAA, 0xBB]);
     expect(result).toEqual(expected);
   });
@@ -55,7 +55,7 @@ describe('LZ3 Decompressor', () => {
       0xFF  // LZ_END
     ]);
 
-    const result = decompressLZ3(compressed);
+    const result = decompressGen2(compressed);
     const expected = new Uint8Array(10).fill(0);
     expect(result).toEqual(expected);
   });
@@ -72,7 +72,7 @@ describe('LZ3 Decompressor', () => {
       0xFF // LZ_END
     ]);
 
-    const result = decompressLZ3(compressed);
+    const result = decompressGen2(compressed);
     const expected = new Uint8Array([0x48, 0x69, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF]);
     expect(result).toEqual(expected);
   });
@@ -86,7 +86,7 @@ describe('LZ3 Decompressor', () => {
       0xFF  // LZ_END
     ]);
 
-    const result = decompressLZ3(compressed);
+    const result = decompressGen2(compressed);
     expect(result.length).toBe(300);
     expect(result.every(byte => byte === 0x41)).toBe(true);
   });
@@ -102,7 +102,7 @@ describe('LZ3 Decompressor', () => {
       0xFF  // LZ_END
     ]);
 
-    const result = decompressLZ3(compressed);
+    const result = decompressGen2(compressed);
     const expected = new Uint8Array([0x41, 0x42, 0x43, 0x44, 0x41, 0x42, 0x43, 0x44]);
     expect(result).toEqual(expected);
   });
@@ -120,7 +120,7 @@ describe('LZ3 Decompressor', () => {
       0xFF  // LZ_END
     ]);
 
-    const result = decompressLZ3(compressed);
+    const result = decompressGen2(compressed);
     const expected = new Uint8Array([
       0x48, 0x65, 0x6C, 0x6C, 0x6F, // "Hello"
       0x20, 0x57, 0x6F, 0x72, 0x6C, 0x64, // " World"
@@ -144,7 +144,7 @@ describe('LZ3 Decompressor', () => {
       0xFF  // LZ_END
     ]);
 
-    const result = decompressLZ3(compressed);
+    const result = decompressGen2(compressed);
     const expected = new Uint8Array([
       0b10110000, // 0xB0
       0b11110000, // 0xF0
@@ -171,7 +171,7 @@ describe('LZ3 Decompressor', () => {
       0xFF  // LZ_END
     ]);
 
-    const result = decompressLZ3(compressed);
+    const result = decompressGen2(compressed);
     const expected = new Uint8Array([
       0xFF, 0x00, 0x81, // Original
       0x00, 0x00, 0x00, // Padding
@@ -181,7 +181,7 @@ describe('LZ3 Decompressor', () => {
   });
 });
 
-describe('LZ3 Integration with Pixel Art', () => {
+describe('Gen2 Integration with Pixel Art', () => {
   it('should decompress sample pixel data', () => {
     // Example: 8x8 checkerboard pattern compressed
     // White = 0xFF, Black = 0x00, alternating pattern
@@ -205,7 +205,7 @@ describe('LZ3 Integration with Pixel Art', () => {
       0xFF  // LZ_END
     ]);
 
-    const result = decompressLZ3(compressed);
+    const result = decompressGen2(compressed);
     expect(result.length).toBe(64); // 8x8 = 64 bytes
 
     // Verify checkerboard pattern

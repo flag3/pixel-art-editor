@@ -14,7 +14,7 @@ const LZ_LONG = 7 << 5;
 const LZ_RW = 2 + 5;
 const LZ_LONG_HI = 0x03;
 
-export function decompressLZ3(compressed: Uint8Array): Uint8Array {
+export function decompressGen2(compressed: Uint8Array): Uint8Array {
   const output: number[] = [];
   let srcIndex = 0;
   const startAddress = 0;

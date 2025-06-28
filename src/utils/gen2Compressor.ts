@@ -1,4 +1,4 @@
-// LZ3 Compression Constants - same as decompressor for compatibility
+// Gen2 Compression Constants - same as decompressor for compatibility
 const LZ_END = 0xff;
 const LZ_LEN = 0x1f;
 
@@ -22,12 +22,12 @@ interface CompressionCommand {
 }
 
 /**
- * Compresses data using the LZ3 algorithm compatible with pokécrystal lzcomp
+ * Compresses data using the Gen2 algorithm compatible with pokécrystal lzcomp
  * @param input - The input data to compress
  * @param options - Compression options
  * @returns Compressed data as Uint8Array
  */
-export function compressLZ3(input: Uint8Array, options: { alignment?: number } = {}): Uint8Array {
+export function compressGen2(input: Uint8Array, options: { alignment?: number } = {}): Uint8Array {
   if (input.length === 0) {
     return new Uint8Array([LZ_END]);
   }

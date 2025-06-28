@@ -1,41 +1,41 @@
 import { describe, it, expect } from 'vitest';
-import { compressLZ3, formatAsHex, estimateCompressionRatio } from './lz3Compressor';
-import { decompressLZ3 } from './lz3Decompressor';
+import { compressGen2, formatAsHex, estimateCompressionRatio } from './gen2Compressor';
+import { decompressGen2 } from './gen2Decompressor';
 
-describe('LZ3 Compressor', () => {
+describe('Gen2 Compressor', () => {
   it('should compress simple literal data', () => {
     const input = new Uint8Array([0x48, 0x65, 0x6C, 0x6C, 0x6F]); // "Hello"
-    const compressed = compressLZ3(input);
+    const compressed = compressGen2(input);
 
     // Should create a literal command
     expect(compressed.length).toBeLessThan(input.length + 3); // Some overhead is expected
 
     // Test round-trip: compress then decompress
-    const decompressed = decompressLZ3(compressed);
+    const decompressed = decompressGen2(compressed);
     expect(decompressed).toEqual(input);
   });
 
   it('should compress zero runs efficiently', () => {
     const input = new Uint8Array(100).fill(0); // 100 zeros
-    const compressed = compressLZ3(input);
+    const compressed = compressGen2(input);
 
     // Should be very efficient for zeros
     expect(compressed.length).toBeLessThan(10);
 
     // Test round-trip
-    const decompressed = decompressLZ3(compressed);
+    const decompressed = decompressGen2(compressed);
     expect(decompressed).toEqual(input);
   });
 
   it('should compress repeated bytes efficiently', () => {
     const input = new Uint8Array(50).fill(0xAA); // 50 repeated 0xAA bytes
-    const compressed = compressLZ3(input);
+    const compressed = compressGen2(input);
 
     // Should be very efficient for repeated bytes
     expect(compressed.length).toBeLessThan(10);
 
     // Test round-trip
-    const decompressed = decompressLZ3(compressed);
+    const decompressed = decompressGen2(compressed);
     expect(decompressed).toEqual(input);
   });
 
@@ -45,25 +45,25 @@ describe('LZ3 Compressor', () => {
       input[i] = i % 2 === 0 ? 0xAA : 0xBB;
     }
 
-    const compressed = compressLZ3(input);
+    const compressed = compressGen2(input);
 
     // Should be efficient for alternating patterns
     expect(compressed.length).toBeLessThan(input.length / 2);
 
     // Test round-trip
-    const decompressed = decompressLZ3(compressed);
+    const decompressed = decompressGen2(compressed);
     expect(decompressed).toEqual(input);
   });
 
   it('should handle empty input', () => {
     const input = new Uint8Array(0);
-    const compressed = compressLZ3(input);
+    const compressed = compressGen2(input);
 
     // Should just contain LZ_END
     expect(compressed).toEqual(new Uint8Array([0xFF]));
 
     // Test round-trip
-    const decompressed = decompressLZ3(compressed);
+    const decompressed = decompressGen2(compressed);
     expect(decompressed).toEqual(input);
   });
 
@@ -75,13 +75,13 @@ describe('LZ3 Compressor', () => {
       input.set(pattern, i * pattern.length);
     }
 
-    const compressed = compressLZ3(input);
+    const compressed = compressGen2(input);
 
     // Should achieve good compression due to repetition
     expect(compressed.length).toBeLessThan(input.length);
 
     // Test round-trip
-    const decompressed = decompressLZ3(compressed);
+    const decompressed = decompressGen2(compressed);
     expect(decompressed).toEqual(input);
   });
 
@@ -98,13 +98,13 @@ describe('LZ3 Compressor', () => {
       0xAA, 0xBB, 0xAA, 0xBB, 0xAA, 0xBB
     ]);
 
-    const compressed = compressLZ3(input);
+    const compressed = compressGen2(input);
 
     // Should achieve reasonable compression
     expect(compressed.length).toBeLessThan(input.length);
 
     // Test round-trip
-    const decompressed = decompressLZ3(compressed);
+    const decompressed = decompressGen2(compressed);
     expect(decompressed).toEqual(input);
   });
 
@@ -125,13 +125,13 @@ describe('LZ3 Compressor', () => {
       }
     }
 
-    const compressed = compressLZ3(input);
+    const compressed = compressGen2(input);
 
     // Should achieve good compression on the patterned sections
     expect(compressed.length).toBeLessThan(input.length);
 
     // Test round-trip
-    const decompressed = decompressLZ3(compressed);
+    const decompressed = decompressGen2(compressed);
     expect(decompressed).toEqual(input);
   });
 
@@ -139,18 +139,18 @@ describe('LZ3 Compressor', () => {
     const input = new Uint8Array([0x01, 0x02, 0x03]);
 
     // Test different alignments
-    const compressed1 = compressLZ3(input, { alignment: 1 });
-    const compressed4 = compressLZ3(input, { alignment: 4 });
-    const compressed8 = compressLZ3(input, { alignment: 8 });
+    const compressed1 = compressGen2(input, { alignment: 1 });
+    const compressed4 = compressGen2(input, { alignment: 4 });
+    const compressed8 = compressGen2(input, { alignment: 8 });
 
     expect(compressed1.length % 1).toBe(0);
     expect(compressed4.length % 4).toBe(0);
     expect(compressed8.length % 8).toBe(0);
 
     // All should decompress to the same result
-    expect(decompressLZ3(compressed1)).toEqual(input);
-    expect(decompressLZ3(compressed4)).toEqual(input);
-    expect(decompressLZ3(compressed8)).toEqual(input);
+    expect(decompressGen2(compressed1)).toEqual(input);
+    expect(decompressGen2(compressed4)).toEqual(input);
+    expect(decompressGen2(compressed8)).toEqual(input);
   });
 
   it('should produce compression compatible with decompressor test cases', () => {
@@ -158,23 +158,23 @@ describe('LZ3 Compressor', () => {
 
     // Literal data
     const literalInput = new Uint8Array([0x48, 0x65, 0x6C, 0x6C, 0x6F]); // "Hello"
-    const literalCompressed = compressLZ3(literalInput);
-    expect(decompressLZ3(literalCompressed)).toEqual(literalInput);
+    const literalCompressed = compressGen2(literalInput);
+    expect(decompressGen2(literalCompressed)).toEqual(literalInput);
 
     // Repeated bytes
     const repeatInput = new Uint8Array(8).fill(0xAA);
-    const repeatCompressed = compressLZ3(repeatInput);
-    expect(decompressLZ3(repeatCompressed)).toEqual(repeatInput);
+    const repeatCompressed = compressGen2(repeatInput);
+    expect(decompressGen2(repeatCompressed)).toEqual(repeatInput);
 
     // Alternating pattern
     const alternateInput = new Uint8Array([0xAA, 0xBB, 0xAA, 0xBB, 0xAA, 0xBB]);
-    const alternateCompressed = compressLZ3(alternateInput);
-    expect(decompressLZ3(alternateCompressed)).toEqual(alternateInput);
+    const alternateCompressed = compressGen2(alternateInput);
+    expect(decompressGen2(alternateCompressed)).toEqual(alternateInput);
 
     // Zeros
     const zeroInput = new Uint8Array(10).fill(0);
-    const zeroCompressed = compressLZ3(zeroInput);
-    expect(decompressLZ3(zeroCompressed)).toEqual(zeroInput);
+    const zeroCompressed = compressGen2(zeroInput);
+    expect(decompressGen2(zeroCompressed)).toEqual(zeroInput);
   });
 
   it('should handle pixel art data efficiently', () => {
@@ -186,13 +186,13 @@ describe('LZ3 Compressor', () => {
       checkerboard[i] = ((row + col) % 2 === 0) ? 0xFF : 0x00;
     }
 
-    const compressed = compressLZ3(checkerboard);
+    const compressed = compressGen2(checkerboard);
 
     // Should achieve decent compression due to pattern
     expect(compressed.length).toBeLessThan(checkerboard.length / 2);
 
     // Test round-trip
-    const decompressed = decompressLZ3(compressed);
+    const decompressed = decompressGen2(compressed);
     expect(decompressed).toEqual(checkerboard);
   });
 
@@ -201,8 +201,8 @@ describe('LZ3 Compressor', () => {
 
     // Solid color blocks
     const solidBlock = new Uint8Array(32).fill(0x42);
-    const solidCompressed = compressLZ3(solidBlock);
-    expect(decompressLZ3(solidCompressed)).toEqual(solidBlock);
+    const solidCompressed = compressGen2(solidBlock);
+    expect(decompressGen2(solidCompressed)).toEqual(solidBlock);
     expect(solidCompressed.length).toBeLessThan(solidBlock.length / 4);
 
     // Gradient
@@ -210,21 +210,21 @@ describe('LZ3 Compressor', () => {
     for (let i = 0; i < gradient.length; i++) {
       gradient[i] = Math.floor((i / gradient.length) * 255);
     }
-    const gradientCompressed = compressLZ3(gradient);
-    expect(decompressLZ3(gradientCompressed)).toEqual(gradient);
+    const gradientCompressed = compressGen2(gradient);
+    expect(decompressGen2(gradientCompressed)).toEqual(gradient);
 
     // Striped pattern
     const stripes = new Uint8Array(24);
     for (let i = 0; i < stripes.length; i++) {
       stripes[i] = Math.floor(i / 4) % 2 === 0 ? 0x00 : 0xFF;
     }
-    const stripesCompressed = compressLZ3(stripes);
-    expect(decompressLZ3(stripesCompressed)).toEqual(stripes);
+    const stripesCompressed = compressGen2(stripes);
+    expect(decompressGen2(stripesCompressed)).toEqual(stripes);
     expect(stripesCompressed.length).toBeLessThan(stripes.length / 2);
   });
 });
 
-describe('LZ3 Compressor Utilities', () => {
+describe('Gen2 Compressor Utilities', () => {
   it('should format hex correctly', () => {
     const data = new Uint8Array([0x00, 0xFF, 0xAB, 0x12]);
     const hex = formatAsHex(data);
@@ -256,7 +256,7 @@ describe('LZ3 Compressor Utilities', () => {
   });
 });
 
-describe('LZ3 Round-trip Compatibility', () => {
+describe('Gen2 Round-trip Compatibility', () => {
   it('should perfectly round-trip with various data types', () => {
     const testCases = [
       new Uint8Array([]), // Empty
@@ -268,8 +268,8 @@ describe('LZ3 Round-trip Compatibility', () => {
     ];
 
     for (const testCase of testCases) {
-      const compressed = compressLZ3(testCase);
-      const decompressed = decompressLZ3(compressed);
+      const compressed = compressGen2(testCase);
+      const decompressed = decompressGen2(compressed);
       expect(decompressed).toEqual(testCase);
     }
   });
@@ -277,12 +277,12 @@ describe('LZ3 Round-trip Compatibility', () => {
   it('should handle maximum length patterns', () => {
     // Test maximum length runs
     const longZeros = new Uint8Array(2000).fill(0);
-    const longCompressed = compressLZ3(longZeros);
-    expect(decompressLZ3(longCompressed)).toEqual(longZeros);
+    const longCompressed = compressGen2(longZeros);
+    expect(decompressGen2(longCompressed)).toEqual(longZeros);
 
     const longRepeated = new Uint8Array(2000).fill(0xAA);
-    const longRepeatCompressed = compressLZ3(longRepeated);
-    expect(decompressLZ3(longRepeatCompressed)).toEqual(longRepeated);
+    const longRepeatCompressed = compressGen2(longRepeated);
+    expect(decompressGen2(longRepeatCompressed)).toEqual(longRepeated);
   });
 
   it('should roundtrip specific pokécrystal data correctly', () => {
@@ -316,21 +316,21 @@ describe('LZ3 Round-trip Compatibility', () => {
     ]);
 
     // Decompress the original data
-    const decompressed = decompressLZ3(originalCompressed);
+    const decompressed = decompressGen2(originalCompressed);
 
     // Recompress the decompressed data
-    const recompressed = compressLZ3(decompressed);
+    const recompressed = compressGen2(decompressed);
 
     // Verify the roundtrip works - the critical test is that data can be consistently
     // decompressed and recompressed without loss of information
-    const decompressedAgain = decompressLZ3(recompressed);
+    const decompressedAgain = decompressGen2(recompressed);
     expect(decompressedAgain).toEqual(decompressed);
 
     // The recompressed data might not be byte-identical to the original compressed data
     // (since there can be multiple valid compression representations of the same data),
     // but it should decompress to the same result
-    const decompressedOriginal = decompressLZ3(originalCompressed);
-    const decompressedRecompressed = decompressLZ3(recompressed);
+    const decompressedOriginal = decompressGen2(originalCompressed);
+    const decompressedRecompressed = decompressGen2(recompressed);
     expect(decompressedRecompressed).toEqual(decompressedOriginal);
   });
 
@@ -365,15 +365,15 @@ describe('LZ3 Round-trip Compatibility', () => {
     ]);
 
     // Decompress the original data
-    const decompressed = decompressLZ3(originalCompressed);
+    const decompressed = decompressGen2(originalCompressed);
 
     // Recompress the decompressed data
-    const recompressed = compressLZ3(decompressed);
+    const recompressed = compressGen2(decompressed);
 
     // The critical requirement is that data integrity is maintained
     // Even if the compressed bytes differ, both should decompress to the same result
-    const decompressedOriginal = decompressLZ3(originalCompressed);
-    const decompressedRecompressed = decompressLZ3(recompressed);
+    const decompressedOriginal = decompressGen2(originalCompressed);
+    const decompressedRecompressed = decompressGen2(recompressed);
     expect(decompressedRecompressed).toEqual(decompressedOriginal);
 
     // Note: Exact byte-for-byte reconstruction is not guaranteed because:
@@ -383,6 +383,6 @@ describe('LZ3 Round-trip Compatibility', () => {
     // But the decompressed data will always be identical, which is what matters for compatibility
     console.log(`Original compressed size: ${originalCompressed.length} bytes`);
     console.log(`Recompressed size: ${recompressed.length} bytes`);
-    console.log(`Data integrity maintained: ${decompressedRecompressed.every((byte, i) => byte === decompressedOriginal[i])}`);
+    console.log(`Data integrity maintained: ${decompressedRecompressed.every((byte: number, i: number) => byte === decompressedOriginal[i])}`);
   });
 });

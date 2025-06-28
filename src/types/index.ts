@@ -1,7 +1,7 @@
 export type Color = "white" | "lightgray" | "darkgray" | "black";
 export type ColorMode = "fourColors" | "twoColors";
 export type ConversionMethod = "leftToRight" | "topToBottomLeft" | "topToBottomRight";
-export type CompressionFormat = "none" | "gen1" | "lz3";
+export type CompressionFormat = "none" | "gen1" | "gen2";
 
 export interface Size {
   width: number;
@@ -73,7 +73,7 @@ export const heightOptions: SelectOption[] = Array.from({ length: 18 }, (_, inde
 });
 
 export const compressionFormatOptions: SelectOption<CompressionFormat>[] = [
-  { value: "none", label: "None" },
+  { value: "none", label: "none" },
   { value: "gen1", label: "gen1" },
-  { value: "lz3", label: "LZ3" },
+  { value: "gen2", label: "gen2" },
 ];
