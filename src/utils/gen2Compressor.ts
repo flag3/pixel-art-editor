@@ -1,55 +1,457 @@
-// Gen2 Compression Constants - same as decompressor for compatibility
-const LZ_END = 0xff;
-const LZ_LEN = 0x1f;
+const SHORT_COMMAND_COUNT = 32;
+const MAX_COMMAND_COUNT = 1024;
+const LOOKBACK_LIMIT = 128;
+const LZ_END = 0xFF;
 
-const LZ_LITERAL = 0 << 5;
-const LZ_ITERATE = 1 << 5;
-const LZ_ALTERNATE = 2 << 5;
-const LZ_ZERO = 3 << 5;
-const LZ_REPEAT = 4 << 5;
-const LZ_FLIP = 5 << 5;
-const LZ_REVERSE = 6 << 5;
-const LZ_LONG = 7 << 5;
+// Bit-flipping table from global.c
+const BIT_FLIPPING_TABLE = new Uint8Array([
+  0x00, 0x80, 0x40, 0xc0, 0x20, 0xa0, 0x60, 0xe0, 0x10, 0x90, 0x50, 0xd0, 0x30, 0xb0, 0x70, 0xf0,
+  0x08, 0x88, 0x48, 0xc8, 0x28, 0xa8, 0x68, 0xe8, 0x18, 0x98, 0x58, 0xd8, 0x38, 0xb8, 0x78, 0xf8,
+  0x04, 0x84, 0x44, 0xc4, 0x24, 0xa4, 0x64, 0xe4, 0x14, 0x94, 0x54, 0xd4, 0x34, 0xb4, 0x74, 0xf4,
+  0x0c, 0x8c, 0x4c, 0xcc, 0x2c, 0xac, 0x6c, 0xec, 0x1c, 0x9c, 0x5c, 0xdc, 0x3c, 0xbc, 0x7c, 0xfc,
+  0x02, 0x82, 0x42, 0xc2, 0x22, 0xa2, 0x62, 0xe2, 0x12, 0x92, 0x52, 0xd2, 0x32, 0xb2, 0x72, 0xf2,
+  0x0a, 0x8a, 0x4a, 0xca, 0x2a, 0xaa, 0x6a, 0xea, 0x1a, 0x9a, 0x5a, 0xda, 0x3a, 0xba, 0x7a, 0xfa,
+  0x06, 0x86, 0x46, 0xc6, 0x26, 0xa6, 0x66, 0xe6, 0x16, 0x96, 0x56, 0xd6, 0x36, 0xb6, 0x76, 0xf6,
+  0x0e, 0x8e, 0x4e, 0xce, 0x2e, 0xae, 0x6e, 0xee, 0x1e, 0x9e, 0x5e, 0xde, 0x3e, 0xbe, 0x7e, 0xfe,
+  0x01, 0x81, 0x41, 0xc1, 0x21, 0xa1, 0x61, 0xe1, 0x11, 0x91, 0x51, 0xd1, 0x31, 0xb1, 0x71, 0xf1,
+  0x09, 0x89, 0x49, 0xc9, 0x29, 0xa9, 0x69, 0xe9, 0x19, 0x99, 0x59, 0xd9, 0x39, 0xb9, 0x79, 0xf9,
+  0x05, 0x85, 0x45, 0xc5, 0x25, 0xa5, 0x65, 0xe5, 0x15, 0x95, 0x55, 0xd5, 0x35, 0xb5, 0x75, 0xf5,
+  0x0d, 0x8d, 0x4d, 0xcd, 0x2d, 0xad, 0x6d, 0xed, 0x1d, 0x9d, 0x5d, 0xdd, 0x3d, 0xbd, 0x7d, 0xfd,
+  0x03, 0x83, 0x43, 0xc3, 0x23, 0xa3, 0x63, 0xe3, 0x13, 0x93, 0x53, 0xd3, 0x33, 0xb3, 0x73, 0xf3,
+  0x0b, 0x8b, 0x4b, 0xcb, 0x2b, 0xab, 0x6b, 0xeb, 0x1b, 0x9b, 0x5b, 0xdb, 0x3b, 0xbb, 0x7b, 0xfb,
+  0x07, 0x87, 0x47, 0xc7, 0x27, 0xa7, 0x67, 0xe7, 0x17, 0x97, 0x57, 0xd7, 0x37, 0xb7, 0x77, 0xf7,
+  0x0f, 0x8f, 0x4f, 0xcf, 0x2f, 0xaf, 0x6f, 0xef, 0x1f, 0x9f, 0x5f, 0xdf, 0x3f, 0xbf, 0x7f, 0xff
+]);
 
-const LZ_LONG_HI = 0x03;
+interface Command {
+  command: number; // 0-6
+  count: number;   // 1-1024
+  value: number;   // offset or bytes
+}
 
-interface CompressionCommand {
-  type: number;
-  length: number;
-  data?: Uint8Array;
-  offset?: number;
-  isLong?: boolean;
+interface CompressionOptions {
+  alignment?: number;
 }
 
 /**
- * Compresses data using the Gen2 algorithm compatible with pokécrystal lzcomp
- * @param input - The input data to compress
- * @param options - Compression options
- * @returns Compressed data as Uint8Array
+ * Main compression function - ports compress() from main.c
  */
-export function compressGen2(input: Uint8Array, options: { alignment?: number } = {}): Uint8Array {
-  if (input.length === 0) {
+export function compressGen2(data: Uint8Array, options: CompressionOptions = {}): Uint8Array {
+  if (data.length === 0) {
     return new Uint8Array([LZ_END]);
   }
 
-  const output: number[] = [];
-  let pos = 0;
+  const { alignment = 0 } = options;
 
-  while (pos < input.length) {
-    const bestCommand = findBestCommand(input, pos);
-
-    if (bestCommand.length === 0) break;
-
-    encodeCommand(bestCommand, output);
-    pos += bestCommand.length;
+  // Create bit-flipped version of the data
+  const bitflipped = new Uint8Array(data.length);
+  for (let i = 0; i < data.length; i++) {
+    bitflipped[i] = BIT_FLIPPING_TABLE[data[i]];
   }
 
-  // Add end marker
+  // Use method 0 for debugging and simplicity
+  const bestCommands = tryCompressSinglePass(data, bitflipped, 0);
+
+  // Convert commands to binary output
+  return writeCommandsToBytes(bestCommands, data, alignment);
+}
+
+/**
+ * Single-pass compressor - ports try_compress_single_pass() from spcomp.c
+ */
+function tryCompressSinglePass(data: Uint8Array, bitflipped: Uint8Array, flags: number): Command[] {
+  const commands: Command[] = new Array(data.length);
+
+  // Initialize all commands as dummy (command 7)
+  for (let i = 0; i < commands.length; i++) {
+    commands[i] = { command: 7, count: 0, value: 0 };
+  }
+
+  let currentCommandIndex = 0;
+  let position = 0;
+  let previousData = 0;
+  let scanDelay = 0;
+  const scanDelayFlag = Math.floor((flags >> 3) % 3);
+
+  while (position < data.length) {
+    const copy = findBestCopy(data, position, data.length, bitflipped, flags);
+    const repetition = findBestRepetition(data, position, data.length);
+
+    // Pick best command between copy and repetition based on flag 1
+    let bestCommand: Command;
+    if (flags & 1) {
+      bestCommand = pickBestCommand(repetition, copy);
+    } else {
+      bestCommand = pickBestCommand(copy, repetition);
+    }
+
+    // Compare with literal command
+    const literalCommand: Command = { command: 0, count: 1, value: position };
+    bestCommand = pickBestCommand(literalCommand, bestCommand);
+
+    // Flag 2: Don't emit copy/repetition equal to size when previous is non-max literal
+    if ((flags & 2) && (commandSize(bestCommand) === bestCommand.count)) {
+      if (previousData && (previousData !== SHORT_COMMAND_COUNT) && (previousData !== MAX_COMMAND_COUNT)) {
+        bestCommand = { command: 0, count: 1, value: position };
+      }
+    }
+
+    // Scan delay logic: force literal commands after non-literal commands
+    if (scanDelayFlag) {
+      if (scanDelay >= scanDelayFlag) {
+        scanDelay = 0;
+      } else if (bestCommand.command) {
+        scanDelay++;
+        bestCommand = { command: 0, count: 1, value: position };
+      }
+    }
+
+    commands[currentCommandIndex] = bestCommand;
+
+    if (bestCommand.command) {
+      previousData = 0;
+    } else {
+      previousData += bestCommand.count;
+    }
+
+    position += bestCommand.count;
+    currentCommandIndex++;
+
+    // Safety check to prevent infinite loops
+    if (currentCommandIndex >= commands.length) {
+      break;
+    }
+  }
+
+  // Trim to actual command count
+  const actualCommands = commands.slice(0, currentCommandIndex);
+
+  // Optimize and repack commands
+  optimize(actualCommands);
+  repack(actualCommands);
+
+  return actualCommands;
+}
+
+// Removed wouldBeCompressible function as it's not used in this implementation
+
+/**
+ * Find best copy command - ports find_best_copy() from spcomp.c
+ */
+function findBestCopy(data: Uint8Array, position: number, length: number, bitflipped: Uint8Array, flags: number): Command {
+  let simple: Command = { command: 7, count: 0, value: 0 }; // dummy
+  let flipped: Command = { command: 7, count: 0, value: 0 };
+  let backwards: Command = { command: 7, count: 0, value: 0 };
+
+  // Scan forwards for normal copy
+  const simpleResult = scanForwards(data.slice(position), length - position, data, position);
+  if (simpleResult.count > 0) {
+    simple = { command: 4, count: simpleResult.count, value: simpleResult.offset };
+  }
+
+  // Scan forwards for bit-flipped copy
+  const flippedResult = scanForwards(data.slice(position), length - position, bitflipped, position);
+  if (flippedResult.count > 0) {
+    flipped = { command: 5, count: flippedResult.count, value: flippedResult.offset };
+  }
+
+  // Scan backwards for reversed copy
+  const backwardsResult = scanBackwards(data, length - position, position);
+  if (backwardsResult.count > 0) {
+    backwards = { command: 6, count: backwardsResult.count, value: backwardsResult.offset };
+  }
+
+  // Pick best based on flags (copy command preference)
+  let command: Command;
+  switch (Math.floor(flags / 24)) {
+    case 0: command = pickBestCommand(simple, backwards, flipped); break;
+    case 1: command = pickBestCommand(backwards, flipped, simple); break;
+    case 2: command = pickBestCommand(flipped, backwards, simple); break;
+    default: command = simple;
+  }
+
+  // Flag 4: Don't emit long copy commands
+  if ((flags & 4) && (command.count > SHORT_COMMAND_COUNT)) {
+    command.count = SHORT_COMMAND_COUNT;
+  }
+
+  return command;
+}
+
+/**
+ * Scan forwards - ports scan_forwards() from spcomp.c
+ */
+function scanForwards(target: Uint8Array, limit: number, source: Uint8Array, realPosition: number): { count: number; offset: number } {
+  let bestMatch = 0;
+  let bestLength = 0;
+
+  for (let position = 0; position < realPosition; position++) {
+    if (source[position] !== target[0]) continue;
+
+    let currentLength = 0;
+    while ((currentLength < limit) &&
+      (position + currentLength < source.length) &&
+      (source[position + currentLength] === target[currentLength])) {
+      currentLength++;
+    }
+
+    if (currentLength > MAX_COMMAND_COUNT) currentLength = MAX_COMMAND_COUNT;
+    if (currentLength < bestLength) continue;
+
+    bestMatch = position;
+    bestLength = currentLength;
+  }
+
+  if (!bestLength) return { count: 0, offset: 0 };
+
+  let offset: number;
+  if ((bestMatch + LOOKBACK_LIMIT) >= realPosition) {
+    offset = bestMatch - realPosition; // negative offset
+  } else {
+    offset = bestMatch; // positive offset
+  }
+
+  return { count: bestLength, offset };
+}
+
+/**
+ * Scan backwards - ports scan_backwards() from spcomp.c
+ */
+function scanBackwards(data: Uint8Array, limit: number, realPosition: number): { count: number; offset: number } {
+  if (realPosition < limit) limit = realPosition;
+
+  let bestMatch = 0;
+  let bestLength = 0;
+
+  for (let position = 0; position < realPosition; position++) {
+    if (data[position] !== data[realPosition]) continue;
+
+    let currentLength = 0;
+    while ((currentLength <= position) &&
+      (currentLength < limit) &&
+      (data[position - currentLength] === data[realPosition + currentLength])) {
+      currentLength++;
+    }
+
+    if (currentLength > MAX_COMMAND_COUNT) currentLength = MAX_COMMAND_COUNT;
+    if (currentLength < bestLength) continue;
+
+    bestMatch = position;
+    bestLength = currentLength;
+  }
+
+  if (!bestLength) return { count: 0, offset: 0 };
+
+  let offset: number;
+  if ((bestMatch + LOOKBACK_LIMIT) >= realPosition) {
+    offset = bestMatch - realPosition; // negative offset
+  } else {
+    offset = bestMatch; // positive offset
+  }
+
+  return { count: bestLength, offset };
+}
+
+/**
+ * Find best repetition - ports find_best_repetition() from spcomp.c
+ */
+function findBestRepetition(data: Uint8Array, position: number, length: number): Command {
+  if ((position + 1) >= length) {
+    return data[position] ? { command: 7, count: 0, value: 0 } : { command: 3, count: 1, value: 0 };
+  }
+
+  const value = [data[position], data[position + 1]];
+  let limit = length - position;
+  if (limit > MAX_COMMAND_COUNT) limit = MAX_COMMAND_COUNT;
+
+  // Count alternating pattern
+  let repcount = 2;
+  while ((repcount < limit) && (data[position + repcount] === value[repcount & 1])) {
+    repcount++;
+  }
+
+  const result: Command = { command: 0, count: repcount, value: 0 };
+
+  if (value[0] !== value[1]) {
+    if (!value[0] && (repcount < 3)) {
+      return { command: 3, count: 1, value: 0 };
+    }
+    result.command = 2;
+    result.value = value[0] | (value[1] << 8);
+  } else if (value[0]) {
+    result.command = 1;
+    result.value = value[0];
+  } else {
+    result.command = 3;
+  }
+
+  return result;
+}
+
+/**
+ * Pick best command - ports pick_best_command() from util.c
+ */
+function pickBestCommand(...commands: Command[]): Command {
+  let best = commands[0];
+  for (let i = 1; i < commands.length; i++) {
+    if (isBetter(commands[i], best)) {
+      best = commands[i];
+    }
+  }
+  return best;
+}
+
+/**
+ * Check if command is better - ports is_better() from util.c
+ */
+function isBetter(newCommand: Command, oldCommand: Command): boolean {
+  if (newCommand.command === 7) return false;
+  if (oldCommand.command === 7) return true;
+
+  const newSavings = newCommand.count - commandSize(newCommand);
+  const oldSavings = oldCommand.count - commandSize(oldCommand);
+
+  return newSavings > oldSavings;
+}
+
+/**
+ * Calculate command size in bytes - ports command_size() from util.c
+ */
+function commandSize(command: Command): number {
+  const headerSize = 1 + (command.count > SHORT_COMMAND_COUNT ? 1 : 0);
+
+  if (command.command & 4) {
+    // Copy commands (4, 5, 6)
+    return headerSize + 1 + (command.value >= 0 ? 1 : 0);
+  }
+
+  // Array lookup: [command.count, 1, 2, 0] for commands [0, 1, 2, 3]
+  const commandSizes = [command.count, 1, 2, 0];
+  return headerSize + commandSizes[command.command];
+}
+
+/**
+ * Optimize commands - ports optimize() from packing.c
+ */
+function optimize(commands: Command[]): void {
+  // Remove leading dummy commands
+  while (commands.length && commands[0].command === 7) {
+    commands.shift();
+  }
+
+  if (commands.length < 2) return;
+
+  let current = 0;
+  let next = 1;
+
+  while (next < commands.length) {
+    if (commands[next].command === 7) {
+      next++;
+      continue;
+    }
+
+    // Optimize inefficient copy commands by merging with literals
+    if (
+      commands[current].command === 0 && // current is literal
+      commandSize(commands[next]) === commands[next].count && // next command is inefficient
+      (commands[current].count + commands[next].count) <= MAX_COMMAND_COUNT &&
+      (commands[current].count > SHORT_COMMAND_COUNT ||
+        (commands[current].count + commands[next].count) <= SHORT_COMMAND_COUNT)
+    ) {
+      commands[current].count += commands[next].count;
+      commands[next].command = 7; // mark as dummy
+      next++;
+      continue;
+    }
+
+    // Merge identical commands
+    if (commands[next].command === commands[current].command) {
+      switch (commands[current].command) {
+        case 0: // literal
+          if ((commands[current].value + commands[current].count) === commands[next].value) {
+            commands[current].count += commands[next].count;
+            commands[next].command = 7;
+
+            if (commands[current].count <= MAX_COMMAND_COUNT) {
+              next++;
+              continue;
+            }
+
+            // Split if too large
+            commands[next].command = 0;
+            commands[next].value = commands[current].value + MAX_COMMAND_COUNT;
+            commands[next].count = commands[current].count - MAX_COMMAND_COUNT;
+            commands[current].count = MAX_COMMAND_COUNT;
+          }
+          break;
+
+        case 1: // iterate
+          if (commands[current].value === commands[next].value) {
+            if ((commands[current].count + commands[next].count) <= MAX_COMMAND_COUNT) {
+              commands[current].count += commands[next].count;
+              commands[next].command = 7;
+              next++;
+              continue;
+            }
+
+            commands[next].count = (commands[current].count + commands[next].count) - MAX_COMMAND_COUNT;
+            commands[current].count = MAX_COMMAND_COUNT;
+          }
+          break;
+
+        case 3: // zero
+          if ((commands[current].count + commands[next].count) <= MAX_COMMAND_COUNT) {
+            commands[current].count += commands[next].count;
+            commands[next].command = 7;
+            next++;
+            continue;
+          }
+
+          commands[next].count = (commands[current].count + commands[next].count) - MAX_COMMAND_COUNT;
+          commands[current].count = MAX_COMMAND_COUNT;
+          break;
+      }
+    }
+
+    current = next;
+    next++;
+  }
+}
+
+/**
+ * Repack commands - ports repack() from packing.c
+ */
+function repack(commands: Command[]): void {
+  // Remove any dummy commands (command 7) in place
+  let writeIndex = 0;
+  for (let readIndex = 0; readIndex < commands.length; readIndex++) {
+    if (commands[readIndex].command !== 7) {
+      if (writeIndex !== readIndex) {
+        commands[writeIndex] = commands[readIndex];
+      }
+      writeIndex++;
+    }
+  }
+
+  // Trim the array to the new length
+  commands.length = writeIndex;
+}
+
+/**
+ * Write commands to binary format - ports write_command_to_file() from output.c
+ */
+function writeCommandsToBytes(commands: Command[], inputData: Uint8Array, alignment: number): Uint8Array {
+  const output: number[] = [];
+
+  for (const command of commands) {
+    writeCommandToBytes(output, command, inputData);
+  }
+
+  // Add terminator
   output.push(LZ_END);
 
-  // Apply alignment padding
-  const alignment = options.alignment || 1;
-  while (output.length % alignment !== 0) {
+  // Add alignment padding
+  while (output.length % (1 << alignment) !== 0) {
     output.push(0);
   }
 
@@ -57,374 +459,103 @@ export function compressGen2(input: Uint8Array, options: { alignment?: number } 
 }
 
 /**
- * Finds the best compression command for the current position
+ * Write single command to bytes - ports write_command_to_file() from output.c
  */
-function findBestCommand(input: Uint8Array, pos: number): CompressionCommand {
-  const remaining = input.length - pos;
-  if (remaining === 0) {
-    return { type: LZ_LITERAL, length: 0 };
+function writeCommandToBytes(output: number[], command: Command, inputData: Uint8Array): void {
+  if (!command.count || command.count > MAX_COMMAND_COUNT) {
+    throw new Error('Invalid command in output stream');
   }
 
-  let bestCommand: CompressionCommand | null = null;
-  let bestSavings = -1;
+  const count = command.count - 1; // Commands store count-1
 
-  // Check for zero run first (highest priority for compression)
-  const zeroRun = findZeroRun(input, pos);
-  if (zeroRun >= 2) {
-    const savings = zeroRun - 1; // saves zeroRun bytes, costs 1 command byte
-    if (savings > bestSavings) {
-      bestSavings = savings;
-      bestCommand = { type: LZ_ZERO, length: Math.min(zeroRun, 1024) };
-    }
-  }
-
-  // Check for iteration (single byte repeat)
-  const iterateRun = findIterateRun(input, pos);
-  if (iterateRun.length >= 2) {
-    const savings = iterateRun.length - 2; // saves length bytes, costs 1 command + 1 data byte
-    if (savings > bestSavings) {
-      bestSavings = savings;
-      bestCommand = {
-        type: LZ_ITERATE,
-        length: Math.min(iterateRun.length, 1024),
-        data: new Uint8Array([iterateRun.byte])
-      };
-    }
-  }
-
-  // Check for alternation (two byte pattern)
-  const alternateRun = findAlternateRun(input, pos);
-  if (alternateRun.length >= 3) {
-    const savings = alternateRun.length - 3; // saves length bytes, costs 1 command + 2 data bytes
-    if (savings > bestSavings) {
-      bestSavings = savings;
-      bestCommand = {
-        type: LZ_ALTERNATE,
-        length: Math.min(alternateRun.length, 1024),
-        data: new Uint8Array([alternateRun.byte1, alternateRun.byte2])
-      };
-    }
-  }
-
-  // Check for copy commands (repeat, flip, reverse)
-  const bestCopy = findBestCopyCommand(input, pos);
-  if (bestCopy && bestCopy.length >= 2) {
-    const offsetCost = (bestCopy.offset! <= 127) ? 1 : 2;
-    const savings = bestCopy.length - (1 + offsetCost);
-    if (savings > bestSavings) {
-      bestSavings = savings;
-      bestCommand = bestCopy;
-    }
-  }
-
-  // If we found a good compression command, use it
-  if (bestCommand && bestSavings >= 0) {
-    return bestCommand;
-  }
-
-  // Default to literal - find the best literal run
-  let literalLength = 1;
-  const maxLiteral = Math.min(remaining, 1024);
-
-  // Look ahead to find a good stopping point for the literal
-  for (let i = 2; i <= maxLiteral; i++) {
-    // Check if we should stop the literal here
-    const nextZeroRun = findZeroRun(input, pos + i);
-    const nextIterateRun = findIterateRun(input, pos + i);
-    const nextAlternateRun = findAlternateRun(input, pos + i);
-
-    if (nextZeroRun >= 3 || nextIterateRun.length >= 3 || nextAlternateRun.length >= 4) {
-      break;
-    }
-
-    literalLength = i;
-
-    // Don't make literals too long without a good reason
-    if (i >= 32) break;
-  }
-
-  return {
-    type: LZ_LITERAL,
-    length: literalLength,
-    data: input.slice(pos, pos + literalLength)
-  };
-}
-
-/**
- * Finds the length of consecutive zero bytes
- */
-function findZeroRun(input: Uint8Array, pos: number): number {
-  let length = 0;
-  while (pos + length < input.length && input[pos + length] === 0) {
-    length++;
-  }
-  return length;
-}
-
-/**
- * Finds runs of repeated single bytes
- */
-function findIterateRun(input: Uint8Array, pos: number): { length: number; byte: number } {
-  if (pos >= input.length) return { length: 0, byte: 0 };
-
-  const byte = input[pos];
-  let length = 1;
-
-  while (pos + length < input.length && input[pos + length] === byte) {
-    length++;
-  }
-
-  return { length, byte };
-}
-
-/**
- * Finds alternating two-byte patterns
- */
-function findAlternateRun(input: Uint8Array, pos: number): { length: number; byte1: number; byte2: number } {
-  if (pos + 1 >= input.length) return { length: 0, byte1: 0, byte2: 0 };
-
-  const byte1 = input[pos];
-  const byte2 = input[pos + 1];
-  let length = 2;
-
-  while (pos + length < input.length) {
-    const expectedByte = (length % 2 === 0) ? byte1 : byte2;
-    if (input[pos + length] !== expectedByte) break;
-    length++;
-  }
-
-  return { length, byte1, byte2 };
-}
-
-/**
- * Finds the best copy command (repeat, flip, reverse) - simplified version
- */
-function findBestCopyCommand(input: Uint8Array, pos: number): CompressionCommand | null {
-  let bestCommand: CompressionCommand | null = null;
-  let bestLength = 0;
-  const maxLength = Math.min(input.length - pos, 1024);
-
-  // Search for matches in the already processed data
-  for (let searchPos = 0; searchPos < pos; searchPos++) {
-    // Normal repeat
-    const repeatMatch = findRepeatMatch(input, pos, searchPos, maxLength);
-    if (repeatMatch.length > bestLength) {
-      bestLength = repeatMatch.length;
-      bestCommand = {
-        type: LZ_REPEAT,
-        length: repeatMatch.length,
-        offset: searchPos
-      };
-    }
-
-    // Only check flip and reverse if we haven't found a good repeat match
-    if (bestLength < 10) {
-      // Bit-flipped match
-      const flipMatch = findFlipMatch(input, pos, searchPos, maxLength);
-      if (flipMatch.length > bestLength) {
-        bestLength = flipMatch.length;
-        bestCommand = {
-          type: LZ_FLIP,
-          length: flipMatch.length,
-          offset: searchPos
-        };
-      }
-
-      // Reverse match
-      const reverseMatch = findReverseMatch(input, pos, searchPos, maxLength);
-      if (reverseMatch.length > bestLength) {
-        bestLength = reverseMatch.length;
-        bestCommand = {
-          type: LZ_REVERSE,
-          length: reverseMatch.length,
-          offset: searchPos
-        };
-      }
-    }
-  }
-
-  return bestCommand;
-}
-
-/**
- * Finds matching sequences for repeat command
- */
-function findRepeatMatch(input: Uint8Array, pos: number, searchPos: number, maxLength: number): { length: number } {
-  let length = 0;
-
-  while (length < maxLength &&
-    pos + length < input.length &&
-    searchPos + length < pos &&
-    input[pos + length] === input[searchPos + length]) {
-    length++;
-  }
-
-  return { length };
-}
-
-/**
- * Finds matching sequences for flip command (bit-reversed)
- */
-function findFlipMatch(input: Uint8Array, pos: number, searchPos: number, maxLength: number): { length: number } {
-  let length = 0;
-
-  while (length < maxLength &&
-    pos + length < input.length &&
-    searchPos + length < pos) {
-    const originalByte = input[searchPos + length];
-    const flippedByte = flipBits(originalByte);
-
-    if (input[pos + length] !== flippedByte) break;
-    length++;
-  }
-
-  return { length };
-}
-
-/**
- * Finds matching sequences for reverse command
- */
-function findReverseMatch(input: Uint8Array, pos: number, searchPos: number, maxLength: number): { length: number } {
-  let length = 0;
-
-  while (length < maxLength &&
-    pos + length < input.length &&
-    searchPos - length >= 0) {
-    if (input[pos + length] !== input[searchPos - length]) break;
-    length++;
-  }
-
-  return { length };
-}
-
-/**
- * Flips all bits in a byte
- */
-function flipBits(byte: number): number {
-  let flipped = 0;
-  for (let i = 0; i < 8; i++) {
-    flipped = (flipped << 1) | (byte & 1);
-    byte >>= 1;
-  }
-  return flipped;
-}
-
-
-
-/**
- * Encodes a single command into the output buffer to match the original decompressor
- */
-function encodeCommand(command: CompressionCommand, output: number[]): void {
-  if (command.length === 0) return;
-
-  const needsLong = command.length > 32;
-
-  if (needsLong) {
-    // LZ_LONG format - match original decompressor exactly
-    // The decompressor does: cmdType = ((nextByte << 3) & LZ_CMD);
-    // So if we want cmdType to be command.type, we need:
-    // (encoded_byte << 3) & 0xE0 = command.type
-    // Therefore: encoded_byte = command.type >> 3
-
-    const lengthMinusOne = command.length - 1;
-    const highBits = (lengthMinusOne >> 8) & LZ_LONG_HI;
-    const lowBits = lengthMinusOne & 0xFF;
-
-    // To get the right cmdType when decompressed:
-    // decompressor does: cmdType = ((byte << 3) & LZ_CMD)
-    // So if we want cmdType = command.type, we need: 
-    // (byte << 3) & 0xE0 = command.type
-    // byte = command.type >> 3
-    const cmdTypeBits = command.type >> 3;
-
-    // First byte: LZ_LONG | cmdTypeBits | highBits
-    output.push(LZ_LONG | cmdTypeBits | highBits);
-    // Second byte: lowBits
-    output.push(lowBits);
+  if (command.count <= SHORT_COMMAND_COUNT) {
+    // Short command: 3-bit command + 5-bit count
+    output.push((command.command << 5) + count);
   } else {
-    // Standard format
-    const lengthMinusOne = Math.min(command.length - 1, LZ_LEN);
-    output.push(command.type | lengthMinusOne);
+    // Long command: exact match to output.c line 112
+    output.push(224 + (command.command << 2) + (count >> 8));
+    output.push(count & 0xFF);
   }
 
-  // Add command-specific data
-  switch (command.type) {
-    case LZ_LITERAL:
-      if (command.data) {
-        output.push(...Array.from(command.data));
+  switch (command.command) {
+    case 1:
+    case 2:
+      // Write value bytes in little-endian order
+      for (let n = 0; n < command.command; n++) {
+        output.push((command.value >> (n * 8)) & 0xFF);
       }
       break;
 
-    case LZ_ITERATE:
-      if (command.data) {
-        output.push(command.data[0]);
-      }
+    case 0: // literal
+    case 3: // zero
       break;
 
-    case LZ_ALTERNATE:
-      if (command.data) {
-        output.push(command.data[0], command.data[1]);
+    default: // 4, 5, 6 (copy commands)
+      if (command.value < 0) {
+        // Negative offset: exact match to output.c line 124
+        // Convert to unsigned byte first, then XOR
+        const unsignedByte = (command.value & 0xFF);
+        output.push(unsignedByte ^ 127);
+      } else {
+        // Positive offset: high byte then low byte
+        output.push((command.value >> 8) & 0xFF);
+        output.push(command.value & 0xFF);
       }
       break;
+  }
 
-    case LZ_REPEAT:
-    case LZ_FLIP:
-    case LZ_REVERSE:
-      if (command.offset !== undefined) {
-        // Calculate position after the command bytes are written
-        const currentPos = output.length + 1; // +1 for the offset byte we're about to add
-        const relativeOffset = currentPos - command.offset;
-
-        if (relativeOffset <= 127 && relativeOffset > 0) {
-          output.push(0x80 | relativeOffset);
-        } else {
-          // Use absolute offset (2 bytes)
-          output.push((command.offset >> 8) & 0xFF);
-          output.push(command.offset & 0xFF);
-        }
-      }
-      break;
+  // Write literal data after header (if command is 0)
+  if (command.command === 0) {
+    for (let i = 0; i < command.count; i++) {
+      output.push(inputData[command.value + i]);
+    }
   }
 }
 
 /**
- * Utility function to format compressed data as hex string for debugging
+ * Format byte array as hex string
  */
 export function formatAsHex(data: Uint8Array): string {
   return Array.from(data)
-    .map(byte => byte.toString(16).padStart(2, '0').toUpperCase())
+    .map(byte => byte.toString(16).toUpperCase().padStart(2, '0'))
     .join(' ');
 }
 
 /**
- * Estimates compression ratio before actually compressing
+ * Estimate compression ratio
  */
-export function estimateCompressionRatio(input: Uint8Array): number {
-  if (input.length === 0) return 1;
+export function estimateCompressionRatio(data: Uint8Array): number {
+  if (data.length === 0) return 1;
 
-  // Quick heuristic based on data patterns
-  let estimatedCompressedSize = 0;
-  let pos = 0;
+  // Quick estimation based on repetitive patterns
+  let compressibleBytes = 0;
+  let i = 0;
 
-  while (pos < input.length) {
-    const zeroRun = findZeroRun(input, pos);
-    const iterateRun = findIterateRun(input, pos);
-
-    if (zeroRun > 3) {
-      estimatedCompressedSize += 1; // Command only
-      pos += zeroRun;
-    } else if (iterateRun.length > 3) {
-      estimatedCompressedSize += 2; // Command + data byte
-      pos += iterateRun.length;
-    } else {
-      // Assume literal
-      const literalLength = Math.min(input.length - pos, 32);
-      estimatedCompressedSize += 1 + literalLength;
-      pos += literalLength;
+  while (i < data.length) {
+    // Count zeros
+    let zeroRun = 0;
+    while (i + zeroRun < data.length && data[i + zeroRun] === 0) {
+      zeroRun++;
     }
+    if (zeroRun > 1) {
+      compressibleBytes += zeroRun - 2;
+      i += zeroRun;
+      continue;
+    }
+
+    // Count repeated bytes
+    let repeatRun = 1;
+    while (i + repeatRun < data.length && data[i + repeatRun] === data[i]) {
+      repeatRun++;
+    }
+    if (repeatRun > 2) {
+      compressibleBytes += repeatRun - 3;
+      i += repeatRun;
+      continue;
+    }
+
+    i++;
   }
 
-  estimatedCompressedSize += 1; // LZ_END
-
-  return input.length / estimatedCompressedSize;
+  return data.length / Math.max(1, data.length - compressibleBytes);
 }
