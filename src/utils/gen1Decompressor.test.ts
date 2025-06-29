@@ -45,7 +45,6 @@ describe("Gen1Decompressor", () => {
   describe("decompressGen1", () => {
     it("should decompress simple 1x1 sprite data", () => {
       // Create a minimal compressed data for 1x1 sprite
-      const compressor = new Gen1Decompressor();
 
       // Test with known compressed data
       const compressed = new Uint8Array([
@@ -79,10 +78,6 @@ describe("Gen1Decompressor", () => {
       // Test size 16 (> 15)
       // Width and height are 4 bits each, so we need to construct 16 properly
       // 16 in 4 bits would be 0, but we can test with header value that decodes to 16
-      const compressed16 = new Uint8Array([
-        0x00, // This would result in width=0 from first 4 bits
-        0x00, 0x00, 0x00, 0x00,
-      ]);
       // Since width is read as 4 bits, max value is 15
       // Let's create a test that actually has width > 15 in the decompressor logic
       expect(() => decompressGen1(compressed0)).toThrow("Invalid image size");
@@ -132,7 +127,7 @@ describe("Gen1Decompressor", () => {
       }
 
       for (const config of testConfigs) {
-        const compressed = compressGen1(originalData, size, config.swap, config.mode);
+        const compressed = compressGen1(originalData, size);
         const decompressed = decompressGen1(compressed);
 
         expect(decompressed).toEqual(originalData);
@@ -254,7 +249,6 @@ describe("Gen1Decompressor", () => {
   describe("Gen1Decompressor class methods", () => {
     it("should correctly read bits from data", () => {
       const decompressor = new Gen1Decompressor();
-      const data = new Uint8Array([0b10110100, 0b11001010]);
 
       // Access private method through decompress
       const compressed = new Uint8Array([
