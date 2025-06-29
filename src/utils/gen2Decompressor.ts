@@ -52,7 +52,7 @@ export function decompressGen2(compressed: Uint8Array): Uint8Array {
       srcIndex++;
 
       if (offsetByte & 0x80) {
-        offset = output.length + (127 - offsetByte); // negative offset: 127 - value
+        offset = output.length - (offsetByte & 0x7F); // negative offset: current position - value
       } else {
         const highOffset = offsetByte;
         const lowOffset = compressed[srcIndex];

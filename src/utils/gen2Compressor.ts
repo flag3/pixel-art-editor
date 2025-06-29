@@ -492,10 +492,12 @@ function writeCommandToBytes(output: number[], command: Command, inputData: Uint
 
     default: // 4, 5, 6 (copy commands)
       if (command.value < 0) {
-        // Negative offset: exact match to output.c line 124
-        // Convert to unsigned byte first, then XOR
-        const unsignedByte = (command.value & 0xFF);
-        output.push(unsignedByte ^ 127);
+        // Negative offset: set high bit and encode absolute value in lower 7 bits
+        const absOffset = Math.abs(command.value);
+        if (absOffset > 127) {
+          throw new Error(`Negative offset too large: ${command.value}`);
+        }
+        output.push(0x80 | absOffset);
       } else {
         // Positive offset: high byte then low byte
         output.push((command.value >> 8) & 0xFF);
