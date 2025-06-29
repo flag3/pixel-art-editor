@@ -21,6 +21,7 @@ export function decompressGen2(compressed: Uint8Array): Uint8Array {
 
   while (srcIndex < compressed.length) {
     const command = compressed[srcIndex];
+    srcIndex++;
 
     if (command === LZ_END) {
       break;
@@ -30,19 +31,17 @@ export function decompressGen2(compressed: Uint8Array): Uint8Array {
     let length: number;
 
     if (cmdType === LZ_LONG) {
-      const nextByte = compressed[srcIndex];
-      cmdType = ((nextByte << 3) & LZ_CMD);
+      // Parse long command according to uncomp.c logic
+      cmdType = ((command & LZ_LEN) >> 2) << 5; // extract real command from bits 4-2, shift to proper position
 
-      const highBits = compressed[srcIndex] & LZ_LONG_HI;
-      srcIndex++;
+      const highBits = (command & LZ_LONG_HI); // bits 1-0 for high byte of length
       const lowBits = compressed[srcIndex];
       srcIndex++;
 
       length = (highBits << 8) | lowBits;
       length++;
     } else {
-      length = (compressed[srcIndex] & LZ_LEN) + 1;
-      srcIndex++;
+      length = (command & LZ_LEN) + 1;
     }
 
     const isRewrite = (cmdType & (1 << LZ_RW)) !== 0;
@@ -53,7 +52,7 @@ export function decompressGen2(compressed: Uint8Array): Uint8Array {
       srcIndex++;
 
       if (offsetByte & 0x80) {
-        offset = output.length - (offsetByte & 0x7f);
+        offset = output.length + (127 - offsetByte); // negative offset: 127 - value
       } else {
         const highOffset = offsetByte;
         const lowOffset = compressed[srcIndex];
