@@ -166,6 +166,10 @@ export default function PixelArtEditor() {
             if (result.success && result.data) {
               applyChange(result.data);
               setError(null);
+
+              if (result.detectedSize) {
+                setGridSize(result.detectedSize);
+              }
             }
           }}
         />
