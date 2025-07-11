@@ -1,6 +1,10 @@
-import { Color, ColorMode, ConversionMethod, Size, CompressionFormat } from "../types";
 import { COLOR_BITS, BITS_TO_COLOR } from "../constants/config";
+import { Color, ColorMode, ConversionMethod, Size, CompressionFormat } from "../types";
 import { validateHexString, validateHexValue, ValidationResult } from "./errorHandling";
+import { compressGen1, formatGen1Hex } from "./gen1Compressor";
+import { decompressGen1, parseGen1Hex } from "./gen1Decompressor";
+import { compressGen2, formatAsHex } from "./gen2Compressor";
+import { decompressGen2, parseCompressedHex } from "./gen2Decompressor";
 
 export interface DecompressionResult {
   success: boolean;
@@ -8,15 +12,9 @@ export interface DecompressionResult {
   error?: string;
   detectedSize?: Size;
 }
-import { compressGen1, formatGen1Hex } from "./gen1Compressor";
-import { decompressGen1, parseGen1Hex } from "./gen1Decompressor";
-import { compressGen2, formatAsHex } from "./gen2Compressor";
-import { decompressGen2, parseCompressedHex } from "./gen2Decompressor";
 
 export const createInitialPixels = (size: Size): Color[][] => {
-  return Array.from({ length: size.width }, () =>
-    Array.from({ length: size.height }, () => "white" as Color),
-  );
+  return Array.from({ length: size.width }, () => Array.from({ length: size.height }, () => "white" as Color));
 };
 
 const pixelToBits = (color: Color): [number, number] => {
@@ -43,11 +41,7 @@ export const pixelsToHex = (
   const width = pixels.length;
   const height = pixels[0].length;
 
-  const convertBlockToHex = (
-    x_start: number,
-    y_start: number,
-    colorMode: ColorMode,
-  ) => {
+  const convertBlockToHex = (x_start: number, y_start: number, colorMode: ColorMode) => {
     for (let y = y_start; y < y_start + 8; y++) {
       let bin1 = "";
       let bin2 = "";
@@ -57,16 +51,10 @@ export const pixelsToHex = (
         bin2 += bit2;
       }
       if (colorMode == "fourColors") {
-        result.push(
-          parseInt(bin1, 2).toString(16).padStart(2, "0").toUpperCase(),
-        );
-        result.push(
-          parseInt(bin2, 2).toString(16).padStart(2, "0").toUpperCase(),
-        );
+        result.push(parseInt(bin1, 2).toString(16).padStart(2, "0").toUpperCase());
+        result.push(parseInt(bin2, 2).toString(16).padStart(2, "0").toUpperCase());
       } else {
-        result.push(
-          parseInt(bin2, 2).toString(16).padStart(2, "0").toUpperCase(),
-        );
+        result.push(parseInt(bin2, 2).toString(16).padStart(2, "0").toUpperCase());
       }
     }
   };
@@ -180,14 +168,10 @@ export const hexToPixels = (
 
   const convertHexToBlock = (x_start: number, y_start: number) => {
     for (let y = y_start; y < y_start + 8; y++) {
-      const bin1 = parseInt(hexArray[hexIndex], 16)
-        .toString(2)
-        .padStart(8, "0");
+      const bin1 = parseInt(hexArray[hexIndex], 16).toString(2).padStart(8, "0");
       hexIndex++;
 
-      const bin2 = parseInt(hexArray[hexIndex], 16)
-        .toString(2)
-        .padStart(8, "0");
+      const bin2 = parseInt(hexArray[hexIndex], 16).toString(2).padStart(8, "0");
       hexIndex++;
 
       for (let x = x_start; x < x_start + 8; x++) {
@@ -240,16 +224,16 @@ export const hexToPixelsWithDecompression = (
       const compressedBytes = parseGen1Hex(hex);
 
       // Auto-detect Gen1 image size from first byte
-      const width = (compressedBytes[0] >> 4) & 0xF;  // Upper 4 bits
-      const height = compressedBytes[0] & 0xF;        // Lower 4 bits
+      const width = (compressedBytes[0] >> 4) & 0xf; // Upper 4 bits
+      const height = compressedBytes[0] & 0xf; // Lower 4 bits
       const autoDetectedSize = {
-        width: width * 8,   // Convert tiles to pixels
-        height: height * 8
+        width: width * 8, // Convert tiles to pixels
+        height: height * 8,
       };
 
       const decompressedBytes = decompressGen1(compressedBytes);
       const decompressedHex = Array.from(decompressedBytes)
-        .map(byte => byte.toString(16).padStart(2, "0").toUpperCase())
+        .map((byte) => byte.toString(16).padStart(2, "0").toUpperCase())
         .join(" ");
 
       const result = hexToPixels(decompressedHex, autoDetectedSize, conversionMethod, colorMode, onError);
@@ -257,7 +241,7 @@ export const hexToPixelsWithDecompression = (
         return {
           success: true,
           data: result.data,
-          detectedSize: autoDetectedSize
+          detectedSize: autoDetectedSize,
         };
       } else {
         return { success: false, error: result.error };
@@ -278,7 +262,7 @@ export const hexToPixelsWithDecompression = (
     try {
       const decompressedBytes = decompressGen2(compressedBytes);
       const decompressedHex = Array.from(decompressedBytes)
-        .map(byte => byte.toString(16).padStart(2, "0").toUpperCase())
+        .map((byte) => byte.toString(16).padStart(2, "0").toUpperCase())
         .join(" ");
 
       const result = hexToPixels(decompressedHex, size, conversionMethod, colorMode, onError);

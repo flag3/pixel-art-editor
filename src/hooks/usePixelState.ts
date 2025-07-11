@@ -1,6 +1,6 @@
-import { useState, useCallback } from "react";
 import { Color, Size } from "../types";
 import { createInitialPixels } from "../utils/hexUtils";
+import { useState, useCallback } from "react";
 
 export interface PixelState {
   pixels: Color[][];
@@ -16,14 +16,17 @@ export const usePixelState = (initialSize: Size): PixelState => {
   const [undoStack, setUndoStack] = useState<Color[][][]>([]);
   const [redoStack, setRedoStack] = useState<Color[][][]>([]);
 
-  const applyChange = useCallback((newPixels: Color[][]) => {
-    const isSameAsPrevious = JSON.stringify(pixels) === JSON.stringify(newPixels);
-    if (isSameAsPrevious) return;
+  const applyChange = useCallback(
+    (newPixels: Color[][]) => {
+      const isSameAsPrevious = JSON.stringify(pixels) === JSON.stringify(newPixels);
+      if (isSameAsPrevious) return;
 
-    setRedoStack([]);
-    setUndoStack((prevStack) => [...prevStack, pixels]);
-    setPixels(newPixels);
-  }, [pixels]);
+      setRedoStack([]);
+      setUndoStack((prevStack) => [...prevStack, pixels]);
+      setPixels(newPixels);
+    },
+    [pixels],
+  );
 
   const undo = useCallback(() => {
     if (!undoStack.length) return;

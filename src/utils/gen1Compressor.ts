@@ -1,7 +1,7 @@
 export class Gen1Compressor {
   /**
    * Compresses data using specified swap and mode parameters
-   * @param data - Input sprite data  
+   * @param data - Input sprite data
    * @param width - Width of sprite in tiles (must equal height)
    * @param swap - Bitplane swap flag (0 or 1)
    * @param mode - Compression mode (0, 1, or 2)
@@ -126,10 +126,7 @@ export class Gen1Compressor {
   }
 
   private preprocess(input: number[][][], swap: number, mode: number, width: number, height: number): number[][][] {
-    const result: number[][][] = [
-      input[0].map(row => [...row]),
-      input[1].map(row => [...row])
-    ];
+    const result: number[][][] = [input[0].map((row) => [...row]), input[1].map((row) => [...row])];
 
     const bp0 = swap;
     const bp1 = 1 ^ swap;
@@ -149,7 +146,7 @@ export class Gen1Compressor {
       let prev = 0;
       for (let x = 0; x < width * 8; x++) {
         const now = result[bp0][y][x];
-        result[bp0][y][x] = (now === prev ? 0 : 1);
+        result[bp0][y][x] = now === prev ? 0 : 1;
         prev = now;
       }
     }
@@ -160,7 +157,7 @@ export class Gen1Compressor {
         let prev = 0;
         for (let x = 0; x < width * 8; x++) {
           const now = result[bp1][y][x];
-          result[bp1][y][x] = (now === prev ? 0 : 1);
+          result[bp1][y][x] = now === prev ? 0 : 1;
           prev = now;
         }
       }
@@ -284,6 +281,6 @@ export function compressGen1(data: Uint8Array, width?: number): Uint8Array {
 
 export function formatGen1Hex(data: Uint8Array): string {
   return Array.from(data)
-    .map(byte => byte.toString(16).padStart(2, '0').toUpperCase())
-    .join(' ');
+    .map((byte) => byte.toString(16).padStart(2, "0").toUpperCase())
+    .join(" ");
 }

@@ -21,4 +21,4 @@ export const Selector = <T extends string = string>({
       </label>
     </div>
   );
-}
+};

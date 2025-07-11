@@ -1,11 +1,7 @@
 import { Color, FileUploaderProps } from "../types";
 import { getClosestColor } from "../utils/colorUtils";
 
-export const FileUploader = ({
-  colorMode,
-  gridSize,
-  applyChange,
-}: FileUploaderProps) => {
+export const FileUploader = ({ colorMode, gridSize, applyChange }: FileUploaderProps) => {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
@@ -40,14 +36,7 @@ export const FileUploader = ({
           const row: Color[] = [];
           for (let y = 0; y < gridSize.height; y++) {
             const pixelData = ctx.getImageData(x, y, 1, 1).data;
-            row.push(
-              getClosestColor(
-                pixelData[0],
-                pixelData[1],
-                pixelData[2],
-                colorMode,
-              ),
-            );
+            row.push(getClosestColor(pixelData[0], pixelData[1], pixelData[2], colorMode));
           }
           newPixels.push(row);
         }
@@ -62,15 +51,10 @@ export const FileUploader = ({
 
   return (
     <div className="file-upload-wrapper">
-      <input
-        type="file"
-        id="fileInput"
-        className="hidden-input"
-        onChange={handleFileUpload}
-      />
+      <input type="file" id="fileInput" className="hidden-input" onChange={handleFileUpload} />
       <button onClick={() => document.getElementById("fileInput")!.click()}>
         <span className="material-icons-outlined">upload</span>
       </button>
     </div>
   );
-}
+};
