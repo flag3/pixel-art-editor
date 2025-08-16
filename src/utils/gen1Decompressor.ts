@@ -28,15 +28,14 @@ export class Gen1Decompressor {
     return n;
   }
 
-  private fillPlane(data: Uint8Array, width: number): Uint8Array {
-    let mode = this.readBit(data);
-    const size = width * width * 0x20;
+  private fillPlane(data: Uint8Array, width: number, height: number): Uint8Array {
+    let packetType = this.readBit(data);
+    const size = width * height * 0x20;
     const plane = new Uint8Array(size);
     let len = 0;
 
     while (len < size) {
-      if (mode) {
-        // Read bit groups
+      if (packetType) {
         while (len < size) {
           const bitGroup = this.readInt(data, 2);
           if (!bitGroup) {
@@ -45,7 +44,6 @@ export class Gen1Decompressor {
           plane[len++] = bitGroup;
         }
       } else {
-        // Read zero run length
         let w = 0;
         while (this.readBit(data)) {
           w++;
@@ -59,17 +57,16 @@ export class Gen1Decompressor {
           plane[len++] = 0;
         }
       }
-      mode ^= 1;
+      packetType ^= 1;
     }
 
     if (len > size) {
       throw new Error("Invalid compressed data: data overflow");
     }
 
-    // Reorganize data
     const ram = new Uint8Array(size);
     len = 0;
-    for (let y = 0; y < width; y++) {
+    for (let y = 0; y < height; y++) {
       for (let x = 0; x < width * 8; x++) {
         for (let i = 0; i < 4; i++) {
           ram[len++] = plane[(y * 4 + i) * width * 8 + x];
@@ -77,18 +74,17 @@ export class Gen1Decompressor {
       }
     }
 
-    // Pack 2-bit groups into bytes
     for (let i = 0; i < size - 3; i += 4) {
       ram[i / 4] = (ram[i] << 6) | (ram[i + 1] << 4) | (ram[i + 2] << 2) | ram[i + 3];
     }
 
-    return ram.slice(0, width * width * 8);
+    return ram.slice(0, width * height * 8);
   }
 
-  private uncompressPlane(plane: Uint8Array, width: number): void {
+  private uncompressPlane(plane: Uint8Array, width: number, height: number): void {
     for (let x = 0; x < width * 8; x++) {
       let bit = 0;
-      for (let y = 0; y < width; y++) {
+      for (let y = 0; y < height; y++) {
         const i = y * width * 8 + x;
         const nybbleHi = (plane[i] >> 4) & 0xf;
         const codeHi = Gen1Decompressor.UNCOMPRESS_CODES[bit][nybbleHi];
@@ -101,13 +97,13 @@ export class Gen1Decompressor {
     }
   }
 
-  private transposeData(data: Uint8Array, width: number): Uint8Array {
-    const size = width * width;
+  private transposeData(data: Uint8Array, width: number, height: number): Uint8Array {
+    const size = width * height;
     const transposed = new Uint8Array(data.length);
 
     for (let i = 0; i < size; i++) {
       const srcTile = i;
-      const dstTile = (i * width + Math.floor(i / width)) % size;
+      const dstTile = (i * height + Math.floor(i / width)) % size;
 
       const srcOffset = srcTile * 16;
       const dstOffset = dstTile * 16;
@@ -124,58 +120,45 @@ export class Gen1Decompressor {
     this.curBit = 7;
     this.curByte = 0;
 
-    // Read header
     const width = this.readInt(data, 4);
     const height = this.readInt(data, 4);
 
-    if (width !== height) {
-      throw new Error("Image is not square");
-    }
-
-    if (width < 1 || width > 15) {
+    if (width === 0 || height === 0) {
       throw new Error("Invalid image size");
     }
 
-    const size = width * width * 8;
+    const size = width * height * 8;
     const rams: Uint8Array[] = [new Uint8Array(size), new Uint8Array(size)];
 
-    // Read order bit
     const order = this.readBit(data);
 
-    // Decompress first plane
-    rams[order] = this.fillPlane(data, width);
+    rams[order] = this.fillPlane(data, width, height);
 
-    // Read mode
     let mode = this.readBit(data);
     if (mode) {
       mode += this.readBit(data);
     }
 
-    // Decompress second plane
-    rams[order ^ 1] = this.fillPlane(data, width);
+    rams[order ^ 1] = this.fillPlane(data, width, height);
 
-    // Apply inverse Gray code
-    this.uncompressPlane(rams[order], width);
+    this.uncompressPlane(rams[order], width, height);
     if (mode !== 1) {
-      this.uncompressPlane(rams[order ^ 1], width);
+      this.uncompressPlane(rams[order ^ 1], width, height);
     }
 
-    // Apply XOR if needed
     if (mode !== 0) {
       for (let i = 0; i < size; i++) {
         rams[order ^ 1][i] ^= rams[order][i];
       }
     }
 
-    // Interleave planes to create 2bpp data
     const output = new Uint8Array(size * 2);
     for (let i = 0; i < size; i++) {
       output[i * 2] = rams[0][i];
       output[i * 2 + 1] = rams[1][i];
     }
 
-    // Transpose back to original tile order
-    return this.transposeData(output, width);
+    return this.transposeData(output, width, height);
   }
 }
 
@@ -185,15 +168,12 @@ export function decompressGen1(data: Uint8Array): Uint8Array {
 }
 
 export function parseGen1Hex(hex: string): Uint8Array {
-  // Remove all whitespace and convert to uppercase
   const cleanHex = hex.replace(/\s+/g, "").toUpperCase();
 
-  // Validate hex string
   if (!/^[0-9A-F]*$/.test(cleanHex)) {
     throw new Error("Invalid hex string");
   }
 
-  // Convert hex string to bytes
   const bytes = new Uint8Array(cleanHex.length / 2);
   for (let i = 0; i < cleanHex.length; i += 2) {
     bytes[i / 2] = parseInt(cleanHex.substr(i, 2), 16);

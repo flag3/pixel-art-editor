@@ -3,7 +3,6 @@ const MAX_COMMAND_COUNT = 1024;
 const LOOKBACK_LIMIT = 128;
 const LZ_END = 0xff;
 
-// Bit-flipping table from global.c
 const BIT_FLIPPING_TABLE = new Uint8Array([
   0x00, 0x80, 0x40, 0xc0, 0x20, 0xa0, 0x60, 0xe0, 0x10, 0x90, 0x50, 0xd0, 0x30, 0xb0, 0x70, 0xf0, 0x08, 0x88, 0x48,
   0xc8, 0x28, 0xa8, 0x68, 0xe8, 0x18, 0x98, 0x58, 0xd8, 0x38, 0xb8, 0x78, 0xf8, 0x04, 0x84, 0x44, 0xc4, 0x24, 0xa4,
@@ -31,9 +30,6 @@ interface CompressionOptions {
   alignment?: number;
 }
 
-/**
- * Main compression function - ports compress() from main.c
- */
 export function compressGen2(data: Uint8Array, options: CompressionOptions = {}): Uint8Array {
   if (data.length === 0) {
     return new Uint8Array([LZ_END]);
@@ -54,9 +50,6 @@ export function compressGen2(data: Uint8Array, options: CompressionOptions = {})
   return writeCommandsToBytes(bestCommands, data, alignment);
 }
 
-/**
- * Single-pass compressor - ports try_compress_single_pass() from spcomp.c
- */
 function tryCompressSinglePass(data: Uint8Array, bitflipped: Uint8Array, flags: number): Command[] {
   const commands: Command[] = new Array(data.length);
 
@@ -133,9 +126,6 @@ function tryCompressSinglePass(data: Uint8Array, bitflipped: Uint8Array, flags: 
 
 // Removed wouldBeCompressible function as it's not used in this implementation
 
-/**
- * Find best copy command - ports find_best_copy() from spcomp.c
- */
 function findBestCopy(
   data: Uint8Array,
   position: number,
@@ -189,9 +179,6 @@ function findBestCopy(
   return command;
 }
 
-/**
- * Scan forwards - ports scan_forwards() from spcomp.c
- */
 function scanForwards(
   target: Uint8Array,
   limit: number,
@@ -232,9 +219,6 @@ function scanForwards(
   return { count: bestLength, offset };
 }
 
-/**
- * Scan backwards - ports scan_backwards() from spcomp.c
- */
 function scanBackwards(data: Uint8Array, limit: number, realPosition: number): { count: number; offset: number } {
   if (realPosition < limit) limit = realPosition;
 
@@ -272,9 +256,6 @@ function scanBackwards(data: Uint8Array, limit: number, realPosition: number): {
   return { count: bestLength, offset };
 }
 
-/**
- * Find best repetition - ports find_best_repetition() from spcomp.c
- */
 function findBestRepetition(data: Uint8Array, position: number, length: number): Command {
   if (position + 1 >= length) {
     return data[position] ? { command: 7, count: 0, value: 0 } : { command: 3, count: 1, value: 0 };
@@ -308,9 +289,6 @@ function findBestRepetition(data: Uint8Array, position: number, length: number):
   return result;
 }
 
-/**
- * Pick best command - ports pick_best_command() from util.c
- */
 function pickBestCommand(...commands: Command[]): Command {
   let best = commands[0];
   for (let i = 1; i < commands.length; i++) {
@@ -321,9 +299,6 @@ function pickBestCommand(...commands: Command[]): Command {
   return best;
 }
 
-/**
- * Check if command is better - ports is_better() from util.c
- */
 function isBetter(newCommand: Command, oldCommand: Command): boolean {
   if (newCommand.command === 7) return false;
   if (oldCommand.command === 7) return true;
@@ -334,9 +309,6 @@ function isBetter(newCommand: Command, oldCommand: Command): boolean {
   return newSavings > oldSavings;
 }
 
-/**
- * Calculate command size in bytes - ports command_size() from util.c
- */
 function commandSize(command: Command): number {
   const headerSize = 1 + (command.count > SHORT_COMMAND_COUNT ? 1 : 0);
 
@@ -350,9 +322,6 @@ function commandSize(command: Command): number {
   return headerSize + commandSizes[command.command];
 }
 
-/**
- * Optimize commands - ports optimize() from packing.c
- */
 function optimize(commands: Command[]): void {
   // Remove leading dummy commands
   while (commands.length && commands[0].command === 7) {
@@ -438,9 +407,6 @@ function optimize(commands: Command[]): void {
   }
 }
 
-/**
- * Repack commands - ports repack() from packing.c
- */
 function repack(commands: Command[]): void {
   // Remove any dummy commands (command 7) in place
   let writeIndex = 0;
@@ -457,9 +423,6 @@ function repack(commands: Command[]): void {
   commands.length = writeIndex;
 }
 
-/**
- * Write commands to binary format - ports write_command_to_file() from output.c
- */
 function writeCommandsToBytes(commands: Command[], inputData: Uint8Array, alignment: number): Uint8Array {
   const output: number[] = [];
 
@@ -478,9 +441,6 @@ function writeCommandsToBytes(commands: Command[], inputData: Uint8Array, alignm
   return new Uint8Array(output);
 }
 
-/**
- * Write single command to bytes - ports write_command_to_file() from output.c
- */
 function writeCommandToBytes(output: number[], command: Command, inputData: Uint8Array): void {
   if (!command.count || command.count > MAX_COMMAND_COUNT) {
     throw new Error("Invalid command in output stream");

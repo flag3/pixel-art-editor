@@ -31,7 +31,6 @@ export function decompressGen2(compressed: Uint8Array): Uint8Array {
     let length: number;
 
     if (cmdType === LZ_LONG) {
-      // Parse long command according to uncomp.c logic
       cmdType = ((command & LZ_LEN) >> 2) << 5; // extract real command from bits 4-2, shift to proper position
 
       const highBits = command & LZ_LONG_HI; // bits 1-0 for high byte of length

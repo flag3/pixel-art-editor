@@ -44,51 +44,13 @@ describe("Gen1Decompressor", () => {
 
   describe("decompressGen1", () => {
     it("should decompress simple 1x1 sprite data", () => {
-      // Create a minimal compressed data for 1x1 sprite
+      const compressed = new Uint8Array([0x11, 0x00, 0x80, 0x00, 0x00, 0x00, 0x00]);
 
-      // Test with known compressed data
-      const compressed = new Uint8Array([
-        0x11, // Header: width=1, height=1
-        0x00, // Order bit and first plane start
-        0x80, // Mode bits
-        0x00,
-        0x00,
-        0x00,
-        0x00, // Minimal plane data
-      ]);
-
-      // Should not throw
       expect(() => decompressGen1(compressed)).not.toThrow();
     });
 
-    it("should throw error for non-square images", () => {
-      const compressed = new Uint8Array([
-        0x12, // Header: width=1, height=2 (non-square)
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-      ]);
-
-      expect(() => decompressGen1(compressed)).toThrow("Image is not square");
-    });
-
     it("should throw error for invalid image sizes", () => {
-      // Test size 0
-      const compressed0 = new Uint8Array([
-        0x00, // Header: width=0, height=0
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-      ]);
-      expect(() => decompressGen1(compressed0)).toThrow("Invalid image size");
-
-      // Test size 16 (> 15)
-      // Width and height are 4 bits each, so we need to construct 16 properly
-      // 16 in 4 bits would be 0, but we can test with header value that decodes to 16
-      // Since width is read as 4 bits, max value is 15
-      // Let's create a test that actually has width > 15 in the decompressor logic
+      const compressed0 = new Uint8Array([0x00, 0x00, 0x00, 0x00, 0x00]);
       expect(() => decompressGen1(compressed0)).toThrow("Invalid image size");
     });
 
@@ -96,17 +58,14 @@ describe("Gen1Decompressor", () => {
       const sizes = [1, 2, 3, 4, 5, 6, 7];
 
       for (const size of sizes) {
-        // Create test image data (2bpp format)
         const tileCount = size * size;
-        const dataSize = tileCount * 16; // 16 bytes per tile in 2bpp
+        const dataSize = tileCount * 16;
         const originalData = new Uint8Array(dataSize);
 
-        // Fill with pattern data
         for (let i = 0; i < dataSize; i++) {
-          originalData[i] = (i * 17) % 256; // Pattern to test
+          originalData[i] = (i * 17) % 256;
         }
 
-        // Compress and decompress
         const compressed = compressGen1(originalData, size);
         const decompressed = decompressGen1(compressed);
 
@@ -116,7 +75,6 @@ describe("Gen1Decompressor", () => {
     });
 
     it("should handle different compression modes correctly", () => {
-      // Test with different swap and mode combinations
       const testConfigs = [
         { swap: 0, mode: 0 },
         { swap: 0, mode: 1 },
@@ -130,7 +88,6 @@ describe("Gen1Decompressor", () => {
       const dataSize = size * size * 16;
       const originalData = new Uint8Array(dataSize);
 
-      // Fill with test pattern
       for (let i = 0; i < dataSize; i++) {
         originalData[i] = i % 256;
       }
@@ -145,7 +102,6 @@ describe("Gen1Decompressor", () => {
     });
 
     it("should decompress actual Pokemon sprite data", () => {
-      // Test with a small sample of actual compressed Pokemon sprite data
       const compressedHex = `
         55 BE 4F A5 31 5E B4 57 B6 7C 9F 2A 63 9C 68
         AF 6D F9 3E 55 C6 38 D1 5E DB F2 7D AA 8C 71
@@ -159,14 +115,12 @@ describe("Gen1Decompressor", () => {
 
       const compressed = parseGen1Hex(compressedHex);
 
-      // Should decompress without throwing
       expect(() => decompressGen1(compressed)).not.toThrow();
 
       const decompressed = decompressGen1(compressed);
 
-      // Check basic properties
       expect(decompressed.length).toBeGreaterThan(0);
-      expect(decompressed.length % 16).toBe(0); // Should be multiple of 16 (tile size)
+      expect(decompressed.length % 16).toBe(0);
 
       console.log(`✓ Decompressed Pokemon sprite: ${decompressed.length} bytes`);
     });
@@ -174,7 +128,7 @@ describe("Gen1Decompressor", () => {
     it("should handle edge case with all zeros", () => {
       const size = 2;
       const dataSize = size * size * 16;
-      const zeroData = new Uint8Array(dataSize); // All zeros
+      const zeroData = new Uint8Array(dataSize);
 
       const compressed = compressGen1(zeroData, size);
       const decompressed = decompressGen1(compressed);
@@ -186,7 +140,7 @@ describe("Gen1Decompressor", () => {
     it("should handle edge case with all ones", () => {
       const size = 2;
       const dataSize = size * size * 16;
-      const onesData = new Uint8Array(dataSize).fill(0xff); // All ones
+      const onesData = new Uint8Array(dataSize).fill(0xff);
 
       const compressed = compressGen1(onesData, size);
       const decompressed = decompressGen1(compressed);
@@ -200,7 +154,6 @@ describe("Gen1Decompressor", () => {
       const dataSize = size * size * 16;
       const patternData = new Uint8Array(dataSize);
 
-      // Create alternating pattern
       for (let i = 0; i < dataSize; i++) {
         patternData[i] = i % 2 === 0 ? 0xaa : 0x55;
       }
@@ -216,13 +169,12 @@ describe("Gen1Decompressor", () => {
       const size = 5;
       const dataSize = size * size * 16;
 
-      // Test various data patterns for compression efficiency
       const patterns = [
-        { name: "sparse", data: new Uint8Array(dataSize) }, // Mostly zeros
-        { name: "dense", data: new Uint8Array(dataSize).fill(0xff) }, // All ones
+        { name: "sparse", data: new Uint8Array(dataSize) },
+        { name: "dense", data: new Uint8Array(dataSize).fill(0xff) },
       ];
 
-      patterns[0].data[100] = 0xff; // Add some non-zero values to sparse
+      patterns[0].data[100] = 0xff;
       patterns[0].data[200] = 0xaa;
 
       for (const pattern of patterns) {
@@ -235,7 +187,6 @@ describe("Gen1Decompressor", () => {
         console.log(`✓ ${pattern.name} pattern: ${compressed.length}/${dataSize} bytes (${ratio}% ratio)`);
       }
 
-      // Test pseudorandom pattern separately to verify round-trip
       const pseudorandomData = new Uint8Array(dataSize);
       for (let i = 0; i < dataSize; i++) {
         pseudorandomData[i] = (i * 7 + i * i * 13) % 256;
@@ -244,8 +195,6 @@ describe("Gen1Decompressor", () => {
       const compressed = compressGen1(pseudorandomData, size);
       const decompressed = decompressGen1(compressed);
 
-      // For complex patterns, the compression may choose different modes
-      // Just verify the data size and that decompression works
       expect(decompressed.length).toBe(dataSize);
       expect(() => decompressGen1(compressed)).not.toThrow();
 
@@ -258,18 +207,8 @@ describe("Gen1Decompressor", () => {
     it("should correctly read bits from data", () => {
       const decompressor = new Gen1Decompressor();
 
-      // Access private method through decompress
-      const compressed = new Uint8Array([
-        0x11, // 1x1 sprite
-        0b10110100, // Test bit reading
-        0b11001010,
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-      ]);
+      const compressed = new Uint8Array([0x11, 0b10110100, 0b11001010, 0x00, 0x00, 0x00, 0x00]);
 
-      // Should process without errors
       expect(() => decompressor.decompress(compressed)).not.toThrow();
     });
 
@@ -277,10 +216,9 @@ describe("Gen1Decompressor", () => {
       const size = 2;
       const dataSize = size * size * 16;
 
-      // Create data that will test bit boundary crossing
       const testData = new Uint8Array(dataSize);
       for (let i = 0; i < dataSize; i++) {
-        testData[i] = (i * 7) % 256; // Prime number for variety
+        testData[i] = (i * 7) % 256;
       }
 
       const compressed = compressGen1(testData, size);
