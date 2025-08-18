@@ -1,6 +1,9 @@
 export type Color = "white" | "lightgray" | "darkgray" | "black";
 export type ColorMode = "fourColors" | "twoColors";
-export type ConversionMethod = "leftToRight" | "topToBottomLeft" | "topToBottomRight";
+export type ConversionMethod =
+  | "leftToRight"
+  | "topToBottomLeft"
+  | "topToBottomRight";
 export type CompressionFormat = "none" | "gen1" | "gen2";
 
 export interface Size {
@@ -62,15 +65,21 @@ export const conversionMethodOptions: SelectOption<ConversionMethod>[] = [
   { value: "topToBottomRight", label: "Top to Bottom, Right to Left" },
 ];
 
-export const widthOptions: SelectOption[] = Array.from({ length: 20 }, (_, index) => {
-  const value = (index + 1) * 8;
-  return { value: value.toString(), label: value.toString() };
-});
+export const widthOptions: SelectOption[] = Array.from(
+  { length: 20 },
+  (_, index) => {
+    const value = (index + 1) * 8;
+    return { value: value.toString(), label: value.toString() };
+  },
+);
 
-export const heightOptions: SelectOption[] = Array.from({ length: 18 }, (_, index) => {
-  const value = (index + 1) * 8;
-  return { value: value.toString(), label: value.toString() };
-});
+export const heightOptions: SelectOption[] = Array.from(
+  { length: 18 },
+  (_, index) => {
+    const value = (index + 1) * 8;
+    return { value: value.toString(), label: value.toString() };
+  },
+);
 
 export const compressionFormatOptions: SelectOption<CompressionFormat>[] = [
   { value: "none", label: "none" },

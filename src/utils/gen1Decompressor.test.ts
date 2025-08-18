@@ -1,5 +1,9 @@
 import { compressGen1 } from "./gen1Compressor";
-import { Gen1Decompressor, decompressGen1, parseGen1Hex } from "./gen1Decompressor";
+import {
+  Gen1Decompressor,
+  decompressGen1,
+  parseGen1Hex,
+} from "./gen1Decompressor";
 import { describe, it, expect } from "vitest";
 
 describe("Gen1Decompressor", () => {
@@ -44,7 +48,9 @@ describe("Gen1Decompressor", () => {
 
   describe("decompressGen1", () => {
     it("should decompress simple 1x1 sprite data", () => {
-      const compressed = new Uint8Array([0x11, 0x00, 0x80, 0x00, 0x00, 0x00, 0x00]);
+      const compressed = new Uint8Array([
+        0x11, 0x00, 0x80, 0x00, 0x00, 0x00, 0x00,
+      ]);
 
       expect(() => decompressGen1(compressed)).not.toThrow();
     });
@@ -70,7 +76,9 @@ describe("Gen1Decompressor", () => {
         const decompressed = decompressGen1(compressed);
 
         expect(decompressed).toEqual(originalData);
-        console.log(`✓ Round-trip test passed for ${size}x${size} sprite (${compressed.length} compressed bytes)`);
+        console.log(
+          `✓ Round-trip test passed for ${size}x${size} sprite (${compressed.length} compressed bytes)`,
+        );
       }
     });
 
@@ -97,7 +105,9 @@ describe("Gen1Decompressor", () => {
         const decompressed = decompressGen1(compressed);
 
         expect(decompressed).toEqual(originalData);
-        console.log(`✓ Mode test passed: swap=${config.swap}, mode=${config.mode}`);
+        console.log(
+          `✓ Mode test passed: swap=${config.swap}, mode=${config.mode}`,
+        );
       }
     });
 
@@ -122,7 +132,9 @@ describe("Gen1Decompressor", () => {
       expect(decompressed.length).toBeGreaterThan(0);
       expect(decompressed.length % 16).toBe(0);
 
-      console.log(`✓ Decompressed Pokemon sprite: ${decompressed.length} bytes`);
+      console.log(
+        `✓ Decompressed Pokemon sprite: ${decompressed.length} bytes`,
+      );
     });
 
     it("should handle edge case with all zeros", () => {
@@ -134,7 +146,9 @@ describe("Gen1Decompressor", () => {
       const decompressed = decompressGen1(compressed);
 
       expect(decompressed).toEqual(zeroData);
-      console.log(`✓ All-zeros test passed (${compressed.length} compressed bytes)`);
+      console.log(
+        `✓ All-zeros test passed (${compressed.length} compressed bytes)`,
+      );
     });
 
     it("should handle edge case with all ones", () => {
@@ -146,7 +160,9 @@ describe("Gen1Decompressor", () => {
       const decompressed = decompressGen1(compressed);
 
       expect(decompressed).toEqual(onesData);
-      console.log(`✓ All-ones test passed (${compressed.length} compressed bytes)`);
+      console.log(
+        `✓ All-ones test passed (${compressed.length} compressed bytes)`,
+      );
     });
 
     it("should handle alternating pattern data", () => {
@@ -162,7 +178,9 @@ describe("Gen1Decompressor", () => {
       const decompressed = decompressGen1(compressed);
 
       expect(decompressed).toEqual(patternData);
-      console.log(`✓ Alternating pattern test passed (${compressed.length} compressed bytes)`);
+      console.log(
+        `✓ Alternating pattern test passed (${compressed.length} compressed bytes)`,
+      );
     });
 
     it("should handle compression efficiency", () => {
@@ -184,7 +202,9 @@ describe("Gen1Decompressor", () => {
         expect(decompressed).toEqual(pattern.data);
 
         const ratio = ((compressed.length / dataSize) * 100).toFixed(1);
-        console.log(`✓ ${pattern.name} pattern: ${compressed.length}/${dataSize} bytes (${ratio}% ratio)`);
+        console.log(
+          `✓ ${pattern.name} pattern: ${compressed.length}/${dataSize} bytes (${ratio}% ratio)`,
+        );
       }
 
       const pseudorandomData = new Uint8Array(dataSize);
@@ -199,7 +219,9 @@ describe("Gen1Decompressor", () => {
       expect(() => decompressGen1(compressed)).not.toThrow();
 
       const ratio = ((compressed.length / dataSize) * 100).toFixed(1);
-      console.log(`✓ pseudorandom pattern: ${compressed.length}/${dataSize} bytes (${ratio}% ratio)`);
+      console.log(
+        `✓ pseudorandom pattern: ${compressed.length}/${dataSize} bytes (${ratio}% ratio)`,
+      );
     });
   });
 
@@ -207,7 +229,9 @@ describe("Gen1Decompressor", () => {
     it("should correctly read bits from data", () => {
       const decompressor = new Gen1Decompressor();
 
-      const compressed = new Uint8Array([0x11, 0b10110100, 0b11001010, 0x00, 0x00, 0x00, 0x00]);
+      const compressed = new Uint8Array([
+        0x11, 0b10110100, 0b11001010, 0x00, 0x00, 0x00, 0x00,
+      ]);
 
       expect(() => decompressor.decompress(compressed)).not.toThrow();
     });

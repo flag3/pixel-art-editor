@@ -3,13 +3,19 @@ export class Gen1Decompressor {
   private curByte = 0;
 
   private static readonly DECODE_TABLE: number[] = [
-    0x0001, 0x0003, 0x0007, 0x000f, 0x001f, 0x003f, 0x007f, 0x00ff, 0x01ff, 0x03ff, 0x07ff, 0x0fff, 0x1fff, 0x3fff,
-    0x7fff, 0xffff,
+    0x0001, 0x0003, 0x0007, 0x000f, 0x001f, 0x003f, 0x007f, 0x00ff, 0x01ff,
+    0x03ff, 0x07ff, 0x0fff, 0x1fff, 0x3fff, 0x7fff, 0xffff,
   ];
 
   private static readonly UNCOMPRESS_CODES: number[][] = [
-    [0x0, 0x1, 0x3, 0x2, 0x7, 0x6, 0x4, 0x5, 0xf, 0xe, 0xc, 0xd, 0x8, 0x9, 0xb, 0xa],
-    [0xf, 0xe, 0xc, 0xd, 0x8, 0x9, 0xb, 0xa, 0x0, 0x1, 0x3, 0x2, 0x7, 0x6, 0x4, 0x5],
+    [
+      0x0, 0x1, 0x3, 0x2, 0x7, 0x6, 0x4, 0x5, 0xf, 0xe, 0xc, 0xd, 0x8, 0x9, 0xb,
+      0xa,
+    ],
+    [
+      0xf, 0xe, 0xc, 0xd, 0x8, 0x9, 0xb, 0xa, 0x0, 0x1, 0x3, 0x2, 0x7, 0x6, 0x4,
+      0x5,
+    ],
   ];
 
   private readBit(data: Uint8Array): number {
@@ -28,7 +34,11 @@ export class Gen1Decompressor {
     return n;
   }
 
-  private fillPlane(data: Uint8Array, width: number, height: number): Uint8Array {
+  private fillPlane(
+    data: Uint8Array,
+    width: number,
+    height: number,
+  ): Uint8Array {
     let packetType = this.readBit(data);
     const size = width * height * 0x20;
     const plane = new Uint8Array(size);
@@ -75,13 +85,18 @@ export class Gen1Decompressor {
     }
 
     for (let i = 0; i < size - 3; i += 4) {
-      ram[i / 4] = (ram[i] << 6) | (ram[i + 1] << 4) | (ram[i + 2] << 2) | ram[i + 3];
+      ram[i / 4] =
+        (ram[i] << 6) | (ram[i + 1] << 4) | (ram[i + 2] << 2) | ram[i + 3];
     }
 
     return ram.slice(0, width * height * 8);
   }
 
-  private uncompressPlane(plane: Uint8Array, width: number, height: number): void {
+  private uncompressPlane(
+    plane: Uint8Array,
+    width: number,
+    height: number,
+  ): void {
     for (let x = 0; x < width * 8; x++) {
       let bit = 0;
       for (let y = 0; y < height; y++) {
@@ -97,7 +112,11 @@ export class Gen1Decompressor {
     }
   }
 
-  private transposeData(data: Uint8Array, width: number, height: number): Uint8Array {
+  private transposeData(
+    data: Uint8Array,
+    width: number,
+    height: number,
+  ): Uint8Array {
     const size = width * height;
     const transposed = new Uint8Array(data.length);
 

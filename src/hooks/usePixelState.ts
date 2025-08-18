@@ -18,7 +18,8 @@ export const usePixelState = (initialSize: Size): PixelState => {
 
   const applyChange = useCallback(
     (newPixels: Color[][]) => {
-      const isSameAsPrevious = JSON.stringify(pixels) === JSON.stringify(newPixels);
+      const isSameAsPrevious =
+        JSON.stringify(pixels) === JSON.stringify(newPixels);
       if (isSameAsPrevious) return;
 
       setRedoStack([]);

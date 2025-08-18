@@ -13,7 +13,11 @@ import {
   widthOptions,
   heightOptions,
 } from "../types";
-import { createInitialPixels, pixelsToHex, hexToPixelsWithDecompression } from "../utils/hexUtils";
+import {
+  createInitialPixels,
+  pixelsToHex,
+  hexToPixelsWithDecompression,
+} from "../utils/hexUtils";
 import { Button } from "./Button";
 import { ColorPicker } from "./ColorPicker";
 import { FileUploader } from "./FileUploader";
@@ -26,9 +30,12 @@ export default function PixelArtEditor() {
   const [colorMode, setColorMode] = useState<ColorMode>("fourColors");
   const [gridSize, setGridSize] = useState<Size>(GRID_CONFIG.DEFAULT_SIZE);
   const [selectedColor, setSelectedColor] = useState<Color>("white");
-  const { pixels, applyChange, undo, redo, canUndo, canRedo } = usePixelState(gridSize);
-  const [conversionMethod, setConversionMethod] = useState<ConversionMethod>("leftToRight");
-  const [compressionFormat, setCompressionFormat] = useState<CompressionFormat>("none");
+  const { pixels, applyChange, undo, redo, canUndo, canRedo } =
+    usePixelState(gridSize);
+  const [conversionMethod, setConversionMethod] =
+    useState<ConversionMethod>("leftToRight");
+  const [compressionFormat, setCompressionFormat] =
+    useState<CompressionFormat>("none");
   const [hexValue, setHexValue] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -92,43 +99,71 @@ export default function PixelArtEditor() {
         <Selector
           label="Width "
           value={gridSize.width.toString()}
-          onChange={(e) => handleGridSizeChange("width", Number(e.target.value))}
+          onChange={(e) =>
+            handleGridSizeChange("width", Number(e.target.value))
+          }
           options={widthOptions}
         />
         <Selector
           label="Height "
           value={gridSize.height.toString()}
-          onChange={(e) => handleGridSizeChange("height", Number(e.target.value))}
+          onChange={(e) =>
+            handleGridSizeChange("height", Number(e.target.value))
+          }
           options={heightOptions}
         />
       </div>
-      <ColorPicker colorMode={colorMode} selectedColor={selectedColor} setSelectedColor={setSelectedColor} />
+      <ColorPicker
+        colorMode={colorMode}
+        selectedColor={selectedColor}
+        setSelectedColor={setSelectedColor}
+      />
       <Grid pixels={pixels} onPixelClick={handlePixelClick} />
       <div className="button-container">
-        <FileUploader colorMode={colorMode} gridSize={gridSize} applyChange={applyChange} />
+        <FileUploader
+          colorMode={colorMode}
+          gridSize={gridSize}
+          applyChange={applyChange}
+        />
         <Button text="undo" onClick={undo} disabled={!canUndo} />
         <Button text="redo" onClick={redo} disabled={!canRedo} />
-        <Button text="delete" onClick={() => applyChange(createInitialPixels(gridSize))} />
+        <Button
+          text="delete"
+          onClick={() => applyChange(createInitialPixels(gridSize))}
+        />
         <Button text="download" onClick={handleFileDownload} />
       </div>
       <Selector
         className="conversion-method"
         label="Conversion Method "
         value={conversionMethod}
-        onChange={(event) => setConversionMethod(event.target.value as ConversionMethod)}
+        onChange={(event) =>
+          setConversionMethod(event.target.value as ConversionMethod)
+        }
         options={conversionMethodOptions}
       />
       <Selector
         className="compression-format"
         label="Compression Format "
         value={compressionFormat}
-        onChange={(event) => setCompressionFormat(event.target.value as CompressionFormat)}
+        onChange={(event) =>
+          setCompressionFormat(event.target.value as CompressionFormat)
+        }
         options={compressionFormatOptions}
       />
       <div className="button-container">
         <Button
           text="code"
-          onClick={() => setHexValue(pixelsToHex(pixels, conversionMethod, colorMode, compressionFormat))}
+          onClick={() =>
+            setHexValue(
+              pixelsToHex(
+                pixels,
+                conversionMethod,
+                colorMode,
+                compressionFormat,
+              ),
+            )
+          }
         />
         <Button
           text="grid_on"
@@ -153,11 +188,19 @@ export default function PixelArtEditor() {
         />
       </div>
       {error && (
-        <div className="error-message" style={{ color: "red", margin: "10px 0" }}>
+        <div
+          className="error-message"
+          style={{ color: "red", margin: "10px 0" }}
+        >
           {error}
         </div>
       )}
-      <HexConverter hexValue={hexValue} setHexValue={setHexValue} colorMode={colorMode} gridSize={gridSize} />
+      <HexConverter
+        hexValue={hexValue}
+        setHexValue={setHexValue}
+        colorMode={colorMode}
+        gridSize={gridSize}
+      />
     </div>
   );
 }

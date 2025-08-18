@@ -15,7 +15,9 @@ describe("Pokemon Red/Blue Compression", () => {
 
     // Verify we get valid compressed data
     expect(compressed.length).toBeGreaterThan(0);
-    console.log(`Simple sprite: ${spriteData.length} -> ${compressed.length} bytes`);
+    console.log(
+      `Simple sprite: ${spriteData.length} -> ${compressed.length} bytes`,
+    );
   });
 
   it("should implement all 6 compression methods", () => {
@@ -38,10 +40,17 @@ describe("Pokemon Red/Blue Compression", () => {
 
     // Test that all 6 methods produce valid output
     for (const method of methods) {
-      const compressed = compressor.compressWithParams(testData, 1, method.swap, method.mode);
+      const compressed = compressor.compressWithParams(
+        testData,
+        1,
+        method.swap,
+        method.mode,
+      );
 
       expect(compressed.length).toBeGreaterThan(0);
-      console.log(`Method (swap=${method.swap}, mode=${method.mode}): ${compressed.length} bytes`);
+      console.log(
+        `Method (swap=${method.swap}, mode=${method.mode}): ${compressed.length} bytes`,
+      );
     }
 
     console.log("✓ All 6 compression methods implemented and working");
@@ -59,7 +68,9 @@ describe("Pokemon Red/Blue Compression", () => {
 
     // Verify automatic method selection works
     expect(compressed.length).toBeGreaterThan(0);
-    console.log(`Auto-selected method: ${testData.length} -> ${compressed.length} bytes`);
+    console.log(
+      `Auto-selected method: ${testData.length} -> ${compressed.length} bytes`,
+    );
   });
 
   it("should successfully decompress the provided hex data", () => {
@@ -92,7 +103,9 @@ describe("Pokemon Red/Blue Compression", () => {
 
     // Test: Successfully decompress the provided data
     const decompressed = decompressGen1(compressedData);
-    console.log(`✓ Successfully decompressed ${compressedData.length} bytes to ${decompressed.length} bytes`);
+    console.log(
+      `✓ Successfully decompressed ${compressedData.length} bytes to ${decompressed.length} bytes`,
+    );
 
     // Verify we got a reasonable amount of data
     expect(decompressed.length).toBeGreaterThan(0);
@@ -109,7 +122,9 @@ describe("Pokemon Red/Blue Compression", () => {
 
       // Test that compression interface works (even if output isn't perfect)
       const recompressed = compressGen1(decompressed, width);
-      console.log(`✓ Compression interface works: created ${recompressed.length} bytes compressed data`);
+      console.log(
+        `✓ Compression interface works: created ${recompressed.length} bytes compressed data`,
+      );
 
       // Verify the compressed data has a valid header
       expect(recompressed.length).toBeGreaterThan(2); // At least header + some data
@@ -122,7 +137,9 @@ describe("Pokemon Red/Blue Compression", () => {
         if (size * size * 16 === totalBytes) {
           console.log(`✓ Detected ${size}x${size} sprite`);
           const recompressed = compressGen1(decompressed, size);
-          console.log(`✓ Compression interface works: created ${recompressed.length} bytes`);
+          console.log(
+            `✓ Compression interface works: created ${recompressed.length} bytes`,
+          );
           found = true;
           break;
         }
@@ -147,7 +164,9 @@ describe("Pokemon Red/Blue Compression", () => {
       const compressed = compressGen1(testData, size);
 
       expect(compressed.length).toBeGreaterThan(0);
-      console.log(`${size}x${size} sprite: ${dataSize} -> ${compressed.length} bytes`);
+      console.log(
+        `${size}x${size} sprite: ${dataSize} -> ${compressed.length} bytes`,
+      );
     }
   });
 
@@ -189,7 +208,9 @@ describe("Pokemon Red/Blue Compression", () => {
     const compressed = compressGen1(checkerboard, size);
 
     expect(compressed.length).toBeGreaterThan(0);
-    console.log(`Checkerboard: ${checkerboard.length} -> ${compressed.length} bytes`);
+    console.log(
+      `Checkerboard: ${checkerboard.length} -> ${compressed.length} bytes`,
+    );
   });
 
   it("should work with different data patterns", () => {
@@ -207,7 +228,9 @@ describe("Pokemon Red/Blue Compression", () => {
       },
       {
         name: "Alternating",
-        data: new Uint8Array(dataSize).map((_, i) => (i % 2 === 0 ? 0x00 : 0xff)),
+        data: new Uint8Array(dataSize).map((_, i) =>
+          i % 2 === 0 ? 0x00 : 0xff,
+        ),
       },
       {
         name: "Sequential",
@@ -219,7 +242,9 @@ describe("Pokemon Red/Blue Compression", () => {
       const compressed = compressGen1(pattern.data, size);
 
       expect(compressed.length).toBeGreaterThan(0);
-      console.log(`${pattern.name}: ${pattern.data.length} -> ${compressed.length} bytes`);
+      console.log(
+        `${pattern.name}: ${pattern.data.length} -> ${compressed.length} bytes`,
+      );
     }
   });
 
@@ -240,7 +265,12 @@ describe("Pokemon Red/Blue Compression", () => {
 
     // Test that all methods produce valid output
     for (const method of methods) {
-      const compressed = compressor.compressWithParams(testData, 1, method.swap, method.mode);
+      const compressed = compressor.compressWithParams(
+        testData,
+        1,
+        method.swap,
+        method.mode,
+      );
       expect(compressed.length).toBeGreaterThan(0);
     }
 
@@ -305,7 +335,9 @@ describe("Pokemon Red/Blue Comprehensive Test", () => {
     }
 
     expect(compressionWorked).toBe(true);
-    console.log("✓ Complete test passed: decompression works and compression interface is functional");
+    console.log(
+      "✓ Complete test passed: decompression works and compression interface is functional",
+    );
   });
 
   it("should demonstrate the 6 compression methods concept", () => {
@@ -327,11 +359,20 @@ describe("Pokemon Red/Blue Comprehensive Test", () => {
 
     for (const method of methods) {
       try {
-        const compressed = compressor.compressWithParams(testData, 1, method.swap, method.mode);
-        console.log(`  Method swap=${method.swap}, mode=${method.mode}: ${compressed.length} bytes`);
+        const compressed = compressor.compressWithParams(
+          testData,
+          1,
+          method.swap,
+          method.mode,
+        );
+        console.log(
+          `  Method swap=${method.swap}, mode=${method.mode}: ${compressed.length} bytes`,
+        );
         expect(compressed.length).toBeGreaterThan(0);
       } catch {
-        console.log(`  Method swap=${method.swap}, mode=${method.mode}: FAILED`);
+        console.log(
+          `  Method swap=${method.swap}, mode=${method.mode}: FAILED`,
+        );
         allMethodsWork = false;
       }
     }
@@ -346,7 +387,9 @@ describe("Pokemon Red/Blue Comprehensive Test", () => {
 
     // Compress it
     const compressed = compressGen1(testData, 1);
-    console.log(`Compressed ${testData.length} bytes to ${compressed.length} bytes`);
+    console.log(
+      `Compressed ${testData.length} bytes to ${compressed.length} bytes`,
+    );
 
     // The key requirement: compression interface exists and produces output
     expect(compressed.length).toBeGreaterThan(0);
@@ -379,7 +422,9 @@ describe("Pokemon Red/Blue Comprehensive Test", () => {
     const originalCompressed = parseGen1Hex(providedHex);
     const decompressedData = decompressGen1(originalCompressed);
 
-    console.log(`✓ Successfully decompressed ${originalCompressed.length} bytes to ${decompressedData.length} bytes`);
+    console.log(
+      `✓ Successfully decompressed ${originalCompressed.length} bytes to ${decompressedData.length} bytes`,
+    );
 
     // Verify the decompressed data looks reasonable
     expect(decompressedData.length).toBe(400); // 5x5 tiles = 25 tiles * 16 bytes
@@ -390,11 +435,15 @@ describe("Pokemon Red/Blue Comprehensive Test", () => {
     expect(compressed).toStrictEqual(originalCompressed);
 
     console.log(`✓ Our compression produces ${compressed.length} bytes`);
-    console.log(`✓ Compression ratio would be ${(400 / compressed.length).toFixed(2)}x`);
+    console.log(
+      `✓ Compression ratio would be ${(400 / compressed.length).toFixed(2)}x`,
+    );
 
     // The key insight: while we may not recreate the exact same compressed bytes,
     // we have successfully implemented a compression interface with 6 methods
-    console.log("✓ Pokemon Red/Blue compression interface successfully implemented!");
+    console.log(
+      "✓ Pokemon Red/Blue compression interface successfully implemented!",
+    );
   });
 
   it("should test all 6 compression methods and show their hex outputs", () => {
@@ -568,13 +617,23 @@ describe("Pokemon Red/Blue Comprehensive Test", () => {
 
     // Test each compression method and compare with expected output
     methods.forEach((method, index) => {
-      const compressed = compressor.compressWithParams(decompressedData, width, method.swap, method.mode);
+      const compressed = compressor.compressWithParams(
+        decompressedData,
+        width,
+        method.swap,
+        method.mode,
+      );
       const hexOutput = formatGen1Hex(compressed);
 
       // Parse expected output (remove whitespace and convert to uppercase)
-      const expectedHex = expectedOutputs[index].replace(/\s+/g, " ").trim().toUpperCase();
+      const expectedHex = expectedOutputs[index]
+        .replace(/\s+/g, " ")
+        .trim()
+        .toUpperCase();
 
-      console.log(`\nMethod ${index + 1} (swap=${method.swap}, mode=${method.mode}):`);
+      console.log(
+        `\nMethod ${index + 1} (swap=${method.swap}, mode=${method.mode}):`,
+      );
       console.log(`Size: ${compressed.length} bytes`);
       console.log(`Expected: ${expectedHex}`);
       console.log(`Actual:   ${hexOutput}`);
@@ -604,7 +663,12 @@ describe("Pokemon Red/Blue Comprehensive Test", () => {
     let bestHex = "";
 
     methods.forEach((method, index) => {
-      const compressed = compressor.compressWithParams(decompressedData, width, method.swap, method.mode);
+      const compressed = compressor.compressWithParams(
+        decompressedData,
+        width,
+        method.swap,
+        method.mode,
+      );
       if (compressed.length < bestSize) {
         bestSize = compressed.length;
         bestMethod = { ...method, index: index + 1 };
