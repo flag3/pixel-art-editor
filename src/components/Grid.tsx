@@ -61,6 +61,15 @@ export const Grid = ({ pixels, onPixelClick }: GridProps) => {
                 }
               }}
               onTouchEnd={handleEnd}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onPixelClick(rowIndex, colIndex);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label={`Pixel row ${rowIndex + 1}, column ${colIndex + 1}`}
               data-row={rowIndex}
               data-col={colIndex}
               style={{ touchAction: "none" }}

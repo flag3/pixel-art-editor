@@ -15,6 +15,15 @@ export const ColorPicker = ({
           key={color}
           className={`color-swatch ${color} ${selectedColor === color ? "selected" : ""}`}
           onClick={() => setSelectedColor(color)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setSelectedColor(color);
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          aria-label={`Select ${color} color`}
         ></div>
       ))}
     </div>
