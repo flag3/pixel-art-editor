@@ -3,6 +3,8 @@ import { useEffect, useState, useCallback } from "react";
 
 export const Grid = ({ pixels, onPixelClick }: GridProps) => {
   const [isMouseDown, setIsMouseDown] = useState(false);
+  const width = pixels.length;
+  const height = pixels[0]?.length ?? 0;
 
   const handleStart = useCallback(
     (row: number, col: number) => {
@@ -37,44 +39,47 @@ export const Grid = ({ pixels, onPixelClick }: GridProps) => {
 
   return (
     <div className="grid">
-      {pixels.map((row, rowIndex) => (
-        <div key={rowIndex} className="row">
-          {row.map((color, colIndex) => (
-            <div
-              key={colIndex}
-              className={`pixel ${color}`}
-              onMouseDown={() => handleStart(rowIndex, colIndex)}
-              onMouseEnter={() => handleMove(rowIndex, colIndex)}
-              onMouseUp={handleEnd}
-              onTouchStart={() => handleStart(rowIndex, colIndex)}
-              onTouchMove={(e) => {
-                e.preventDefault();
-                const touch = e.touches[0];
-                const element = document.elementFromPoint(
-                  touch.clientX,
-                  touch.clientY,
-                );
-                if (element && element.classList.contains("pixel")) {
-                  const row = parseInt(element.getAttribute("data-row")!, 10);
-                  const col = parseInt(element.getAttribute("data-col")!, 10);
-                  handleMove(row, col);
-                }
-              }}
-              onTouchEnd={handleEnd}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
+      {Array.from({ length: height }, (_, yIndex) => (
+        <div key={yIndex} className="row">
+          {Array.from({ length: width }, (_, xIndex) => {
+            const color = pixels[xIndex][yIndex];
+            return (
+              <div
+                key={xIndex}
+                className={`pixel ${color}`}
+                onMouseDown={() => handleStart(xIndex, yIndex)}
+                onMouseEnter={() => handleMove(xIndex, yIndex)}
+                onMouseUp={handleEnd}
+                onTouchStart={() => handleStart(xIndex, yIndex)}
+                onTouchMove={(e) => {
                   e.preventDefault();
-                  onPixelClick(rowIndex, colIndex);
-                }
-              }}
-              role="button"
-              tabIndex={0}
-              aria-label={`Pixel row ${rowIndex + 1}, column ${colIndex + 1}`}
-              data-row={rowIndex}
-              data-col={colIndex}
-              style={{ touchAction: "none" }}
-            ></div>
-          ))}
+                  const touch = e.touches[0];
+                  const element = document.elementFromPoint(
+                    touch.clientX,
+                    touch.clientY,
+                  );
+                  if (element && element.classList.contains("pixel")) {
+                    const row = parseInt(element.getAttribute("data-row")!, 10);
+                    const col = parseInt(element.getAttribute("data-col")!, 10);
+                    handleMove(row, col);
+                  }
+                }}
+                onTouchEnd={handleEnd}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onPixelClick(xIndex, yIndex);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label={`Pixel row ${yIndex + 1}, column ${xIndex + 1}`}
+                data-row={xIndex}
+                data-col={yIndex}
+                style={{ touchAction: "none" }}
+              ></div>
+            );
+          })}
         </div>
       ))}
     </div>
