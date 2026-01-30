@@ -1,4 +1,4 @@
-import { Color, Size } from "../types";
+import type { Color, Size } from "../types";
 import { createInitialPixels } from "../utils/hexUtils";
 import { useState, useCallback } from "react";
 
@@ -18,8 +18,7 @@ export const usePixelState = (initialSize: Size): PixelState => {
 
   const applyChange = useCallback(
     (newPixels: Color[][]) => {
-      const isSameAsPrevious =
-        JSON.stringify(pixels) === JSON.stringify(newPixels);
+      const isSameAsPrevious = JSON.stringify(pixels) === JSON.stringify(newPixels);
       if (isSameAsPrevious) return;
 
       setRedoStack([]);

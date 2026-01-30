@@ -1,16 +1,7 @@
 import { COLOR_BITS, BITS_TO_COLOR } from "../constants/config";
-import {
-  Color,
-  ColorMode,
-  ConversionMethod,
-  Size,
-  CompressionFormat,
-} from "../types";
-import {
-  validateHexString,
-  validateHexValue,
-  ValidationResult,
-} from "./errorHandling";
+import type { Color, ColorMode, ConversionMethod, Size, CompressionFormat } from "../types";
+import type { ValidationResult } from "./errorHandling";
+import { validateHexString, validateHexValue } from "./errorHandling";
 import { compressGen1, formatGen1Hex } from "./gen1Compressor";
 import { decompressGen1, parseGen1Hex } from "./gen1Decompressor";
 import { compressGen2, formatAsHex } from "./gen2Compressor";
@@ -53,11 +44,7 @@ export const pixelsToHex = (
   const width = pixels.length;
   const height = pixels[0].length;
 
-  const convertBlockToHex = (
-    x_start: number,
-    y_start: number,
-    colorMode: ColorMode,
-  ) => {
+  const convertBlockToHex = (x_start: number, y_start: number, colorMode: ColorMode) => {
     for (let y = y_start; y < y_start + 8; y++) {
       let bin1 = "";
       let bin2 = "";
@@ -67,16 +54,10 @@ export const pixelsToHex = (
         bin2 += bit2;
       }
       if (colorMode == "fourColors") {
-        result.push(
-          parseInt(bin1, 2).toString(16).padStart(2, "0").toUpperCase(),
-        );
-        result.push(
-          parseInt(bin2, 2).toString(16).padStart(2, "0").toUpperCase(),
-        );
+        result.push(parseInt(bin1, 2).toString(16).padStart(2, "0").toUpperCase());
+        result.push(parseInt(bin2, 2).toString(16).padStart(2, "0").toUpperCase());
       } else {
-        result.push(
-          parseInt(bin2, 2).toString(16).padStart(2, "0").toUpperCase(),
-        );
+        result.push(parseInt(bin2, 2).toString(16).padStart(2, "0").toUpperCase());
       }
     }
   };
@@ -129,10 +110,7 @@ export const pixelsToHex = (
         return formatAsHex(compressed);
       }
     } catch (error) {
-      console.error(
-        `${compressionFormat.toUpperCase()} compression failed:`,
-        error,
-      );
+      console.error(`${compressionFormat.toUpperCase()} compression failed:`, error);
       // Fall back to uncompressed format
       return hexString;
     }
@@ -193,14 +171,10 @@ export const hexToPixels = (
 
   const convertHexToBlock = (x_start: number, y_start: number) => {
     for (let y = y_start; y < y_start + 8; y++) {
-      const bin1 = parseInt(hexArray[hexIndex], 16)
-        .toString(2)
-        .padStart(8, "0");
+      const bin1 = parseInt(hexArray[hexIndex], 16).toString(2).padStart(8, "0");
       hexIndex++;
 
-      const bin2 = parseInt(hexArray[hexIndex], 16)
-        .toString(2)
-        .padStart(8, "0");
+      const bin2 = parseInt(hexArray[hexIndex], 16).toString(2).padStart(8, "0");
       hexIndex++;
 
       for (let x = x_start; x < x_start + 8; x++) {
@@ -282,8 +256,7 @@ export const hexToPixelsWithDecompression = (
         return { success: false, error: result.error };
       }
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Gen1 decompression failed";
+      const errorMessage = error instanceof Error ? error.message : "Gen1 decompression failed";
       if (onError) onError(errorMessage);
       return { success: false, error: errorMessage };
     }
@@ -301,21 +274,14 @@ export const hexToPixelsWithDecompression = (
         .map((byte) => byte.toString(16).padStart(2, "0").toUpperCase())
         .join(" ");
 
-      const result = hexToPixels(
-        decompressedHex,
-        size,
-        conversionMethod,
-        colorMode,
-        onError,
-      );
+      const result = hexToPixels(decompressedHex, size, conversionMethod, colorMode, onError);
       return {
         success: result.success,
         data: result.data,
         error: result.error,
       };
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Decompression failed";
+      const errorMessage = error instanceof Error ? error.message : "Decompression failed";
       if (onError) onError(errorMessage);
       return { success: false, error: errorMessage };
     }

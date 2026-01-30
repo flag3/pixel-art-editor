@@ -5,9 +5,7 @@ describe("Gen2 Decompressor", () => {
   it("should parse hex string correctly", () => {
     const hexString = "00 05 48 65 6C 6C 6F FF";
     const bytes = parseCompressedHex(hexString);
-    expect(bytes).toEqual(
-      new Uint8Array([0x00, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0xff]),
-    );
+    expect(bytes).toEqual(new Uint8Array([0x00, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0xff]));
   });
 
   it("should decompress literal data", () => {
@@ -36,9 +34,7 @@ describe("Gen2 Decompressor", () => {
     ]);
 
     const result = decompressGen2(compressed);
-    const expected = new Uint8Array([
-      0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
-    ]);
+    const expected = new Uint8Array([0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa]);
     expect(result).toEqual(expected);
   });
 
@@ -84,9 +80,7 @@ describe("Gen2 Decompressor", () => {
     ]);
 
     const result = decompressGen2(compressed);
-    const expected = new Uint8Array([
-      0x48, 0x69, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff,
-    ]);
+    const expected = new Uint8Array([0x48, 0x69, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff]);
     expect(result).toEqual(expected);
   });
 
@@ -120,9 +114,7 @@ describe("Gen2 Decompressor", () => {
     ]);
 
     const result = decompressGen2(compressed);
-    const expected = new Uint8Array([
-      0x41, 0x42, 0x43, 0x44, 0x41, 0x42, 0x43, 0x44,
-    ]);
+    const expected = new Uint8Array([0x41, 0x42, 0x43, 0x44, 0x41, 0x42, 0x43, 0x44]);
     expect(result).toEqual(expected);
   });
 

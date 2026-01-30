@@ -1,4 +1,4 @@
-import { SelectorProps } from "../types";
+import type { SelectorProps } from "../types";
 
 export const Selector = <T extends string = string>({
   className,

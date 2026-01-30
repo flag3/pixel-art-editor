@@ -1,4 +1,4 @@
-import { GridProps } from "../types";
+import type { GridProps } from "../types";
 import { useEffect, useState, useCallback } from "react";
 
 export const Grid = ({ pixels, onPixelClick }: GridProps) => {
@@ -54,10 +54,7 @@ export const Grid = ({ pixels, onPixelClick }: GridProps) => {
                 onTouchMove={(e) => {
                   e.preventDefault();
                   const touch = e.touches[0];
-                  const element = document.elementFromPoint(
-                    touch.clientX,
-                    touch.clientY,
-                  );
+                  const element = document.elementFromPoint(touch.clientX, touch.clientY);
                   if (element && element.classList.contains("pixel")) {
                     const row = parseInt(element.getAttribute("data-row")!, 10);
                     const col = parseInt(element.getAttribute("data-col")!, 10);

@@ -7,12 +7,7 @@ export class Gen1Compressor {
    * @param mode - Compression mode (0, 1, or 2)
    * @returns Compressed data as Uint8Array
    */
-  compressWithParams(
-    data: Uint8Array,
-    width: number,
-    swap: number,
-    mode: number,
-  ): Uint8Array {
+  compressWithParams(data: Uint8Array, width: number, swap: number, mode: number): Uint8Array {
     if (width < 1 || width > 15) {
       throw new Error("Invalid sprite width");
     }
@@ -29,9 +24,7 @@ export class Gen1Compressor {
   compress(data: Uint8Array, width: number): Uint8Array {
     const expectedSize = width * width * 16;
     if (data.length !== expectedSize) {
-      throw new Error(
-        `Invalid data size: expected ${expectedSize}, got ${data.length}`,
-      );
+      throw new Error(`Invalid data size: expected ${expectedSize}, got ${data.length}`);
     }
 
     // Try all 6 compression methods
@@ -48,12 +41,7 @@ export class Gen1Compressor {
     let bestSize = Infinity;
 
     for (const method of methods) {
-      const compressed = this.compressInternal(
-        data,
-        width,
-        method.swap,
-        method.mode,
-      );
+      const compressed = this.compressInternal(data, width, method.swap, method.mode);
       if (compressed.length < bestSize) {
         bestSize = compressed.length;
         bestCompressed = compressed;
@@ -106,11 +94,7 @@ export class Gen1Compressor {
     return this.packBits(output);
   }
 
-  private convertToBitplanes(
-    data: Uint8Array,
-    width: number,
-    height: number,
-  ): number[][][] {
+  private convertToBitplanes(data: Uint8Array, width: number, height: number): number[][][] {
     const bitplanes: number[][][] = [[], []];
 
     // Initialize bitplanes
@@ -153,10 +137,7 @@ export class Gen1Compressor {
     width: number,
     height: number,
   ): number[][][] {
-    const result: number[][][] = [
-      input[0].map((row) => [...row]),
-      input[1].map((row) => [...row]),
-    ];
+    const result: number[][][] = [input[0].map((row) => [...row]), input[1].map((row) => [...row])];
 
     const bp0 = swap;
     const bp1 = 1 ^ swap;
@@ -226,11 +207,7 @@ export class Gen1Compressor {
             count++;
           }
 
-          if (
-            a !== 0 ||
-            b !== 0 ||
-            (x === totalWidth - 2 && y === totalHeight - 1)
-          ) {
+          if (a !== 0 || b !== 0 || (x === totalWidth - 2 && y === totalHeight - 1)) {
             // End of zero run - encode count
             const enc = count + 1;
             let pow = 1;
@@ -310,9 +287,7 @@ export function compressGen1(data: Uint8Array, width?: number): Uint8Array {
     width = Math.sqrt(tilesCount);
 
     if (!Number.isInteger(width)) {
-      throw new Error(
-        "Cannot auto-detect sprite width - data size doesn't form a square",
-      );
+      throw new Error("Cannot auto-detect sprite width - data size doesn't form a square");
     }
   }
 
