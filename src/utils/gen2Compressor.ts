@@ -53,7 +53,7 @@ export function compressGen2(data: Uint8Array, options: CompressionOptions = {})
 }
 
 function tryCompressSinglePass(data: Uint8Array, bitflipped: Uint8Array, flags: number): Command[] {
-  const commands: Command[] = new Array(data.length);
+  const commands: Command[] = Array.from({ length: data.length });
 
   // Initialize all commands as dummy (command 7)
   for (let i = 0; i < commands.length; i++) {
