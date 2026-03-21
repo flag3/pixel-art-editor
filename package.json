@@ -8,8 +8,8 @@
     "build": "tsc -b && vite build",
     "fmt": "oxfmt --check",
     "fmt:fix": "oxfmt",
-    "lint": "oxlint",
-    "lint:fix": "oxlint --fix",
+    "lint": "oxlint --type-aware --type-check",
+    "lint:fix": "oxlint --type-aware --type-check --fix",
     "preview": "vite preview",
     "test": "vitest"
   },
