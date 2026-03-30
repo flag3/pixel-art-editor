@@ -108,7 +108,10 @@ export default function PixelArtEditor() {
         <FileUploader colorMode={colorMode} gridSize={gridSize} applyChange={applyChange} />
         <Button icon="material-symbols:undo" onClick={undo} disabled={!canUndo} />
         <Button icon="material-symbols:redo" onClick={redo} disabled={!canRedo} />
-        <Button icon="material-symbols:delete-outline" onClick={() => applyChange(createInitialPixels(gridSize))} />
+        <Button
+          icon="material-symbols:delete-outline"
+          onClick={() => applyChange(createInitialPixels(gridSize))}
+        />
         <Button icon="material-symbols:download" onClick={handleFileDownload} />
       </div>
       <Selector
