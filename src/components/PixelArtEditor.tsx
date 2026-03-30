@@ -106,10 +106,10 @@ export default function PixelArtEditor() {
       <Grid pixels={pixels} onPixelClick={handlePixelClick} />
       <div className="button-container">
         <FileUploader colorMode={colorMode} gridSize={gridSize} applyChange={applyChange} />
-        <Button text="undo" onClick={undo} disabled={!canUndo} />
-        <Button text="redo" onClick={redo} disabled={!canRedo} />
-        <Button text="delete" onClick={() => applyChange(createInitialPixels(gridSize))} />
-        <Button text="download" onClick={handleFileDownload} />
+        <Button icon="material-symbols:undo" onClick={undo} disabled={!canUndo} />
+        <Button icon="material-symbols:redo" onClick={redo} disabled={!canRedo} />
+        <Button icon="material-symbols:delete-outline" onClick={() => applyChange(createInitialPixels(gridSize))} />
+        <Button icon="material-symbols:download" onClick={handleFileDownload} />
       </div>
       <Selector
         className="conversion-method"
@@ -127,13 +127,13 @@ export default function PixelArtEditor() {
       />
       <div className="button-container">
         <Button
-          text="code"
+          icon="material-symbols:code"
           onClick={() =>
             setHexValue(pixelsToHex(pixels, conversionMethod, colorMode, compressionFormat))
           }
         />
         <Button
-          text="grid_on"
+          icon="material-symbols:grid-on"
           onClick={() => {
             const result = hexToPixelsWithDecompression(
               hexValue,

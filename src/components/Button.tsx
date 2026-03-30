@@ -1,9 +1,10 @@
+import { Icon } from "@iconify/react";
 import type { ButtonProps } from "../types";
 
-export const Button = ({ text, onClick, disabled = false }: ButtonProps) => {
+export const Button = ({ icon, onClick, disabled = false }: ButtonProps) => {
   return (
     <button onClick={onClick} disabled={disabled}>
-      <span className="material-icons-outlined">{text}</span>
+      <Icon icon={icon} />
     </button>
   );
 };

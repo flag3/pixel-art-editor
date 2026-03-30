@@ -144,6 +144,11 @@ button {
   font-size: 16px;
 }
 
+button svg {
+  width: 24px;
+  height: 24px;
+}
+
 button:hover {
   background-color: #555;
 }

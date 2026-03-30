@@ -33,7 +33,7 @@ export interface SelectorProps<T = string> {
 }
 
 export interface ButtonProps {
-  text: string;
+  icon: string;
   onClick: () => void;
   disabled?: boolean;
 }

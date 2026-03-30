@@ -1,3 +1,4 @@
+import { Icon } from "@iconify/react";
 import type { Color, FileUploaderProps } from "../types";
 import { getClosestColor } from "../utils/colorUtils";
 
@@ -53,7 +54,7 @@ export const FileUploader = ({ colorMode, gridSize, applyChange }: FileUploaderP
     <div className="file-upload-wrapper">
       <input type="file" id="fileInput" className="hidden-input" onChange={handleFileUpload} />
       <button onClick={() => document.getElementById("fileInput")!.click()}>
-        <span className="material-icons-outlined">upload</span>
+        <Icon icon="material-symbols:upload" />
       </button>
     </div>
   );
