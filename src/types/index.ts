@@ -38,12 +38,6 @@ export interface ButtonProps {
   disabled?: boolean;
 }
 
-export interface FileUploaderProps {
-  colorMode: ColorMode;
-  gridSize: Size;
-  applyChange: (newPixels: Color[][]) => void;
-}
-
 export interface HexConverterProps {
   hexValue: string;
   setHexValue: React.Dispatch<React.SetStateAction<string>>;

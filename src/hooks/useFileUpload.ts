@@ -1,9 +1,19 @@
-import { Icon } from "@iconify/react";
-import type { Color, FileUploaderProps } from "../types";
+import { useRef } from "react";
+import type { Color, ColorMode, Size } from "../types";
 import { getClosestColor } from "../utils/colorUtils";
 
-export const FileUploader = ({ colorMode, gridSize, applyChange }: FileUploaderProps) => {
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+interface UseFileUploadProps {
+  colorMode: ColorMode;
+  gridSize: Size;
+  applyChange: (newPixels: Color[][]) => void;
+}
+
+export const useFileUpload = ({ colorMode, gridSize, applyChange }: UseFileUploadProps) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleClick = () => inputRef.current?.click();
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
 
@@ -50,12 +60,5 @@ export const FileUploader = ({ colorMode, gridSize, applyChange }: FileUploaderP
     reader.readAsDataURL(file);
   };
 
-  return (
-    <div className="file-upload-wrapper">
-      <input type="file" id="fileInput" className="hidden-input" onChange={handleFileUpload} />
-      <button onClick={() => document.getElementById("fileInput")!.click()}>
-        <Icon icon="material-symbols:upload" />
-      </button>
-    </div>
-  );
+  return { inputRef, handleClick, handleChange };
 };

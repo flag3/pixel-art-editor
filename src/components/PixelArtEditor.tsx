@@ -12,10 +12,10 @@ import {
 import { createInitialPixels, pixelsToHex, hexToPixelsWithDecompression } from "../utils/hexUtils";
 import { Button } from "./Button";
 import { ColorPicker } from "./ColorPicker";
-import { FileUploader } from "./FileUploader";
 import { Grid } from "./Grid";
 import { HexConverter } from "./HexConverter";
 import { Selector } from "./Selector";
+import { useFileUpload } from "../hooks/useFileUpload";
 import { useState, useCallback } from "react";
 
 export default function PixelArtEditor() {
@@ -23,6 +23,11 @@ export default function PixelArtEditor() {
   const [gridSize, setGridSize] = useState<Size>(GRID_CONFIG.DEFAULT_SIZE);
   const [selectedColor, setSelectedColor] = useState<Color>("white");
   const { pixels, applyChange, undo, redo, canUndo, canRedo } = usePixelState(gridSize);
+  const {
+    inputRef,
+    handleClick: handleUploadClick,
+    handleChange: handleUploadChange,
+  } = useFileUpload({ colorMode, gridSize, applyChange });
   const [conversionMethod, setConversionMethod] = useState<ConversionMethod>("leftToRight");
   const [compressionFormat, setCompressionFormat] = useState<CompressionFormat>("none");
   const [hexValue, setHexValue] = useState("");
@@ -105,7 +110,8 @@ export default function PixelArtEditor() {
       />
       <Grid pixels={pixels} onPixelClick={handlePixelClick} />
       <div className="button-container">
-        <FileUploader colorMode={colorMode} gridSize={gridSize} applyChange={applyChange} />
+        <input ref={inputRef} type="file" className="hidden-input" onChange={handleUploadChange} />
+        <Button icon="material-symbols:upload" onClick={handleUploadClick} />
         <Button icon="material-symbols:undo" onClick={undo} disabled={!canUndo} />
         <Button icon="material-symbols:redo" onClick={redo} disabled={!canRedo} />
         <Button
