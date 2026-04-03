@@ -9,11 +9,11 @@ import {
   heightOptions,
 } from "../types";
 import { createInitialPixels, pixelsToHex, hexToPixelsWithDecompression } from "../utils/hexUtils";
-import { Button } from "./Button";
+import { Button } from "./ui/Button";
 import { ColorPicker } from "./ColorPicker";
 import { Grid } from "./Grid";
-import { HexConverter } from "./HexConverter";
-import { Selector } from "./Selector";
+import { Select } from "./ui/Select";
+import { Textarea } from "./ui/Textarea";
 import { useFileUpload } from "../hooks/useFileUpload";
 import { useState, useCallback } from "react";
 
@@ -79,28 +79,35 @@ export default function PixelArtEditor() {
 
   return (
     <div className="container">
-      <Selector
-        className="color-mode-selector"
-        label="Color Mode "
-        value={colorMode}
-        onChange={(event) => {
-          setColorMode(event.target.value as ColorMode);
-        }}
-        options={colorModeOptions}
-      />
+      <div className="color-mode-selector">
+        <label>
+          Color Mode{" "}
+          <Select
+            value={colorMode}
+            onChange={(event) => {
+              setColorMode(event.target.value as ColorMode);
+            }}
+            options={colorModeOptions}
+          />
+        </label>
+      </div>
       <div className="grid-size-selector">
-        <Selector
-          label="Width "
-          value={gridSize.width.toString()}
-          onChange={(e) => handleGridSizeChange("width", Number(e.target.value))}
-          options={widthOptions}
-        />
-        <Selector
-          label="Height "
-          value={gridSize.height.toString()}
-          onChange={(e) => handleGridSizeChange("height", Number(e.target.value))}
-          options={heightOptions}
-        />
+        <label>
+          Width{" "}
+          <Select
+            value={gridSize.width.toString()}
+            onChange={(e) => handleGridSizeChange("width", Number(e.target.value))}
+            options={widthOptions}
+          />
+        </label>
+        <label>
+          Height{" "}
+          <Select
+            value={gridSize.height.toString()}
+            onChange={(e) => handleGridSizeChange("height", Number(e.target.value))}
+            options={heightOptions}
+          />
+        </label>
       </div>
       <ColorPicker
         colorMode={colorMode}
@@ -119,20 +126,26 @@ export default function PixelArtEditor() {
         />
         <Button icon="material-symbols:download" onClick={handleFileDownload} />
       </div>
-      <Selector
-        className="conversion-method"
-        label="Conversion Method "
-        value={conversionMethod}
-        onChange={(event) => setConversionMethod(event.target.value as ConversionMethod)}
-        options={conversionMethodOptions}
-      />
-      <Selector
-        className="compression-format"
-        label="Compression Format "
-        value={compressionFormat}
-        onChange={(event) => setCompressionFormat(event.target.value as CompressionFormat)}
-        options={compressionFormatOptions}
-      />
+      <div className="conversion-method">
+        <label>
+          Conversion Method{" "}
+          <Select
+            value={conversionMethod}
+            onChange={(event) => setConversionMethod(event.target.value as ConversionMethod)}
+            options={conversionMethodOptions}
+          />
+        </label>
+      </div>
+      <div className="compression-format">
+        <label>
+          Compression Format{" "}
+          <Select
+            value={compressionFormat}
+            onChange={(event) => setCompressionFormat(event.target.value as CompressionFormat)}
+            options={compressionFormatOptions}
+          />
+        </label>
+      </div>
       <div className="button-container">
         <Button
           icon="material-symbols:code"
@@ -167,11 +180,11 @@ export default function PixelArtEditor() {
           {error}
         </div>
       )}
-      <HexConverter
-        hexValue={hexValue}
-        setHexValue={setHexValue}
-        colorMode={colorMode}
-        gridSize={gridSize}
+      <Textarea
+        value={hexValue}
+        onChange={(e) => setHexValue(e.target.value)}
+        rows={colorMode === "fourColors" ? gridSize.height / 4 : gridSize.height / 8}
+        cols={gridSize.width * 3 - 3}
       />
     </div>
   );

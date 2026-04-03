@@ -24,25 +24,23 @@ export interface ColorPickerProps {
   setSelectedColor: React.Dispatch<React.SetStateAction<Color>>;
 }
 
-export interface SelectorProps<T = string> {
-  className?: string;
-  label: string;
+export interface SelectProps<T = string> {
   value: T;
   onChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
   options: SelectOption<T>[];
+}
+
+export interface TextareaProps {
+  value: string;
+  onChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  rows: number;
+  cols: number;
 }
 
 export interface ButtonProps {
   icon: string;
   onClick: () => void;
   disabled?: boolean;
-}
-
-export interface HexConverterProps {
-  hexValue: string;
-  setHexValue: React.Dispatch<React.SetStateAction<string>>;
-  colorMode: ColorMode;
-  gridSize: Size;
 }
 
 export const colorModeOptions: SelectOption<ColorMode>[] = [
