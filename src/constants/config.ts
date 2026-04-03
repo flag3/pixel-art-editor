@@ -1,13 +1,5 @@
 export const GRID_CONFIG = {
-  BLOCK_SIZE: 8,
-  MAX_WIDTH_BLOCKS: 20,
-  MAX_HEIGHT_BLOCKS: 18,
   DEFAULT_SIZE: { width: 16, height: 16 },
-} as const;
-
-export const VALIDATION = {
-  HEX_PATTERN: /^[0-9A-Fa-f]{2}$/,
-  INVALID_CHARS_PATTERN: /[^a-fA-F0-9]/,
 } as const;
 
 export const DOWNLOAD_CONFIG = {

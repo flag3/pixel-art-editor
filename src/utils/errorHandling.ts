@@ -42,13 +42,3 @@ export const validateHexValue = (hex: string): ValidationResult<boolean> => {
     data: true,
   };
 };
-
-export const createErrorHandler = (onError?: (error: string) => void) => {
-  return (error: string) => {
-    if (onError) {
-      onError(error);
-    } else {
-      console.error(error);
-    }
-  };
-};

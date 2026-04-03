@@ -1,4 +1,3 @@
-import "../App.css";
 import { GRID_CONFIG, DOWNLOAD_CONFIG } from "../constants/config";
 import { usePixelState } from "../hooks/usePixelState";
 import type { Color, ColorMode, ConversionMethod, CompressionFormat, Size } from "../types";
