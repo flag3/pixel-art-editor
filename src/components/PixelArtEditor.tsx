@@ -145,7 +145,7 @@ export default function PixelArtEditor() {
       </div>
       <div className="button-container">
         <Button icon="material-symbols:code" onClick={handleEncode} />
-        <Button icon="material-symbols:grid-on" onClick={handleDecode} />
+        <Button icon="material-symbols:grid-on-outline" onClick={handleDecode} />
       </div>
       {error && (
         <div className="error-message" style={{ color: "red", margin: "10px 0" }}>
