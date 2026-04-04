@@ -6,9 +6,15 @@ interface UseFileUploadProps {
   colorMode: ColorMode;
   gridSize: Size;
   applyChange: (newPixels: Color[][]) => void;
+  onError: (message: string) => void;
 }
 
-export const useFileUpload = ({ colorMode, gridSize, applyChange }: UseFileUploadProps) => {
+export const useFileUpload = ({
+  colorMode,
+  gridSize,
+  applyChange,
+  onError,
+}: UseFileUploadProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleClick = () => inputRef.current?.click();
@@ -18,21 +24,21 @@ export const useFileUpload = ({ colorMode, gridSize, applyChange }: UseFileUploa
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      alert("Please upload an image file.");
+      onError("Please upload an image file.");
       return;
     }
 
     const reader = new FileReader();
 
     reader.onerror = () => {
-      alert("Failed to read the image.");
+      onError("Failed to read the image.");
     };
 
     reader.onload = (e) => {
       const img = new Image();
       img.onload = () => {
         if (img.width !== gridSize.width || img.height !== gridSize.height) {
-          alert(`Please upload a ${gridSize.width}x${gridSize.height} image.`);
+          onError(`Please upload a ${gridSize.width}x${gridSize.height} image.`);
           return;
         }
 

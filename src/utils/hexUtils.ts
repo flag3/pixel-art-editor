@@ -93,7 +93,6 @@ export const pixelsToHex = (
   // Apply compression if requested
   if (compressionFormat === "gen1" || compressionFormat === "gen2") {
     try {
-      // Convert hex string to bytes
       const hexBytes = hexString.replace(/\s+/g, "");
       const bytes = new Uint8Array(hexBytes.length / 2);
       for (let i = 0; i < hexBytes.length; i += 2) {
@@ -101,17 +100,13 @@ export const pixelsToHex = (
       }
 
       if (compressionFormat === "gen1") {
-        // Compress the bytes using Gen1
         const compressed = compressGen1(bytes);
         return formatGen1Hex(compressed);
       } else if (compressionFormat === "gen2") {
-        // Compress the bytes using Gen2
         const compressed = compressGen2(bytes);
         return formatAsHex(compressed);
       }
-    } catch (error) {
-      console.error(`${compressionFormat.toUpperCase()} compression failed:`, error);
-      // Fall back to uncompressed format
+    } catch {
       return hexString;
     }
   }

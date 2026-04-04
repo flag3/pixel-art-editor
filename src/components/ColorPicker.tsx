@@ -2,7 +2,7 @@ import type { ColorPickerProps } from "../types";
 import { colorsByMode } from "../utils/colorUtils";
 import { useMemo } from "react";
 
-export const ColorPicker = ({ colorMode, selectedColor, setSelectedColor }: ColorPickerProps) => {
+export const ColorPicker = ({ colorMode, selectedColor, onColorSelect }: ColorPickerProps) => {
   const availableColors = useMemo(() => colorsByMode[colorMode], [colorMode]);
   return (
     <div className="color-picker">
@@ -10,11 +10,11 @@ export const ColorPicker = ({ colorMode, selectedColor, setSelectedColor }: Colo
         <div
           key={color}
           className={`color-swatch ${color} ${selectedColor === color ? "selected" : ""}`}
-          onClick={() => setSelectedColor(color)}
+          onClick={() => onColorSelect(color)}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
-              setSelectedColor(color);
+              onColorSelect(color);
             }
           }}
           role="button"

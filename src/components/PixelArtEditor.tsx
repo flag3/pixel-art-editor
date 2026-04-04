@@ -1,5 +1,7 @@
-import { GRID_CONFIG, DOWNLOAD_CONFIG } from "../constants/config";
+import { GRID_CONFIG } from "../constants/config";
 import { usePixelState } from "../hooks/usePixelState";
+import { useHexConversion } from "../hooks/useHexConversion";
+import { usePixelDownload } from "../hooks/usePixelDownload";
 import type { Color, ColorMode, ConversionMethod, CompressionFormat, Size } from "../types";
 import {
   colorModeOptions,
@@ -7,8 +9,8 @@ import {
   compressionFormatOptions,
   widthOptions,
   heightOptions,
-} from "../types";
-import { createInitialPixels, pixelsToHex, hexToPixelsWithDecompression } from "../utils/hexUtils";
+} from "../constants/options";
+import { createInitialPixels } from "../utils/hexUtils";
 import { Button } from "./ui/Button";
 import { ColorPicker } from "./ColorPicker";
 import { Grid } from "./Grid";
@@ -22,15 +24,37 @@ export default function PixelArtEditor() {
   const [gridSize, setGridSize] = useState<Size>(GRID_CONFIG.DEFAULT_SIZE);
   const [selectedColor, setSelectedColor] = useState<Color>("white");
   const { pixels, applyChange, undo, redo, canUndo, canRedo } = usePixelState(gridSize);
+
+  const handleDecodeSuccess = useCallback(
+    (newPixels: Color[][], detectedSize?: Size) => {
+      applyChange(newPixels);
+      if (detectedSize) {
+        setGridSize(detectedSize);
+      }
+    },
+    [applyChange],
+  );
+
+  const {
+    conversionMethod,
+    compressionFormat,
+    hexValue,
+    error,
+    setHexValue,
+    setError,
+    setConversionMethod,
+    setCompressionFormat,
+    handleEncode,
+    handleDecode,
+  } = useHexConversion({ pixels, gridSize, colorMode, onDecodeSuccess: handleDecodeSuccess });
+
+  const { handleFileDownload } = usePixelDownload(pixels);
+
   const {
     inputRef,
     handleClick: handleUploadClick,
     handleChange: handleUploadChange,
-  } = useFileUpload({ colorMode, gridSize, applyChange });
-  const [conversionMethod, setConversionMethod] = useState<ConversionMethod>("leftToRight");
-  const [compressionFormat, setCompressionFormat] = useState<CompressionFormat>("none");
-  const [hexValue, setHexValue] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  } = useFileUpload({ colorMode, gridSize, applyChange, onError: setError });
 
   const handleGridSizeChange = useCallback(
     (dimension: "width" | "height", value: number) => {
@@ -49,33 +73,6 @@ export default function PixelArtEditor() {
     },
     [pixels, selectedColor, applyChange],
   );
-
-  const handleFileDownload = useCallback(() => {
-    const canvas = document.createElement("canvas");
-    canvas.width = pixels.length * DOWNLOAD_CONFIG.CANVAS_SCALE;
-    canvas.height = pixels[0].length * DOWNLOAD_CONFIG.CANVAS_SCALE;
-    const ctx = canvas.getContext("2d")!;
-
-    const computedStyle = getComputedStyle(document.documentElement);
-
-    pixels.forEach((row, rowIndex) => {
-      row.forEach((color, colIndex) => {
-        ctx.fillStyle = computedStyle.getPropertyValue(`--${color}`);
-        ctx.fillRect(
-          rowIndex * DOWNLOAD_CONFIG.CANVAS_SCALE,
-          colIndex * DOWNLOAD_CONFIG.CANVAS_SCALE,
-          DOWNLOAD_CONFIG.CANVAS_SCALE,
-          DOWNLOAD_CONFIG.CANVAS_SCALE,
-        );
-      });
-    });
-
-    const dataURL = canvas.toDataURL();
-    const link = document.createElement("a");
-    link.href = dataURL;
-    link.download = DOWNLOAD_CONFIG.DEFAULT_FILENAME;
-    link.click();
-  }, [pixels]);
 
   return (
     <div className="container">
@@ -112,7 +109,7 @@ export default function PixelArtEditor() {
       <ColorPicker
         colorMode={colorMode}
         selectedColor={selectedColor}
-        setSelectedColor={setSelectedColor}
+        onColorSelect={setSelectedColor}
       />
       <Grid pixels={pixels} onPixelClick={handlePixelClick} />
       <div className="button-container">
@@ -147,33 +144,8 @@ export default function PixelArtEditor() {
         </label>
       </div>
       <div className="button-container">
-        <Button
-          icon="material-symbols:code"
-          onClick={() =>
-            setHexValue(pixelsToHex(pixels, conversionMethod, colorMode, compressionFormat))
-          }
-        />
-        <Button
-          icon="material-symbols:grid-on"
-          onClick={() => {
-            const result = hexToPixelsWithDecompression(
-              hexValue,
-              gridSize,
-              conversionMethod,
-              colorMode,
-              compressionFormat,
-              setError,
-            );
-            if (result.success && result.data) {
-              applyChange(result.data);
-              setError(null);
-
-              if (result.detectedSize) {
-                setGridSize(result.detectedSize);
-              }
-            }
-          }}
-        />
+        <Button icon="material-symbols:code" onClick={handleEncode} />
+        <Button icon="material-symbols:grid-on" onClick={handleDecode} />
       </div>
       {error && (
         <div className="error-message" style={{ color: "red", margin: "10px 0" }}>
