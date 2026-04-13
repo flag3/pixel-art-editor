@@ -60,6 +60,7 @@ export const useFileUpload = ({
     };
 
     reader.readAsDataURL(file);
+    event.target.value = "";
   };
 
   return { inputRef, handleClick, handleChange };
