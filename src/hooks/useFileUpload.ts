@@ -37,15 +37,11 @@ export const useFileUpload = ({
     reader.onload = (e) => {
       const img = new Image();
       img.onload = () => {
-        if (img.width !== gridSize.width || img.height !== gridSize.height) {
-          onError(`Please upload a ${gridSize.width}x${gridSize.height} image.`);
-          return;
-        }
-
         const canvas = document.createElement("canvas");
         canvas.width = gridSize.width;
         canvas.height = gridSize.height;
         const ctx = canvas.getContext("2d")!;
+        ctx.imageSmoothingEnabled = false;
         ctx.drawImage(img, 0, 0, gridSize.width, gridSize.height);
 
         const newPixels: Color[][] = [];

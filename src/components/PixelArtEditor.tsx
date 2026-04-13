@@ -113,7 +113,13 @@ export default function PixelArtEditor() {
       />
       <Grid pixels={pixels} onPixelClick={handlePixelClick} />
       <div className="button-container">
-        <input ref={inputRef} type="file" className="hidden-input" onChange={handleUploadChange} />
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          className="hidden-input"
+          onChange={handleUploadChange}
+        />
         <Button icon="material-symbols:upload" onClick={handleUploadClick} />
         <Button icon="material-symbols:undo" onClick={undo} disabled={!canUndo} />
         <Button icon="material-symbols:redo" onClick={redo} disabled={!canRedo} />
