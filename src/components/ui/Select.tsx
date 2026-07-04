@@ -1,4 +1,10 @@
-import type { SelectProps } from "../../types";
+import type { SelectOption } from "../../types";
+
+interface SelectProps<T = string> {
+  value: T;
+  onChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
+  options: SelectOption<T>[];
+}
 
 export const Select = <T extends string = string>({ value, onChange, options }: SelectProps<T>) => {
   return (

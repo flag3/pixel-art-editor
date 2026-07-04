@@ -1,9 +1,14 @@
-import type { ColorPickerProps } from "../types";
+import type { Color, ColorMode } from "../types";
 import { colorsByMode } from "../utils/colorUtils";
-import { useMemo } from "react";
+
+interface ColorPickerProps {
+  colorMode: ColorMode;
+  selectedColor: Color;
+  onColorSelect: (color: Color) => void;
+}
 
 export const ColorPicker = ({ colorMode, selectedColor, onColorSelect }: ColorPickerProps) => {
-  const availableColors = useMemo(() => colorsByMode[colorMode], [colorMode]);
+  const availableColors = colorsByMode[colorMode];
   return (
     <div className="color-picker">
       {availableColors.map((color) => (

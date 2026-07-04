@@ -1,5 +1,10 @@
 import { Icon } from "@iconify/react";
-import type { ButtonProps } from "../../types";
+
+interface ButtonProps {
+  icon: string;
+  onClick: () => void;
+  disabled?: boolean;
+}
 
 export const Button = ({ icon, onClick, disabled = false }: ButtonProps) => {
   return (

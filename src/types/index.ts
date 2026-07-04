@@ -12,33 +12,3 @@ export interface SelectOption<T = string> {
   value: T;
   label: string;
 }
-
-export interface GridProps {
-  pixels: Color[][];
-  onPixelClick: (row: number, col: number) => void;
-}
-
-export interface ColorPickerProps {
-  colorMode: ColorMode;
-  selectedColor: Color;
-  onColorSelect: (color: Color) => void;
-}
-
-export interface SelectProps<T = string> {
-  value: T;
-  onChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
-  options: SelectOption<T>[];
-}
-
-export interface TextareaProps {
-  value: string;
-  onChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  rows: number;
-  cols: number;
-}
-
-export interface ButtonProps {
-  icon: string;
-  onClick: () => void;
-  disabled?: boolean;
-}

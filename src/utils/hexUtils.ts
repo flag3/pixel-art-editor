@@ -1,11 +1,28 @@
-import { COLOR_BITS, BITS_TO_COLOR } from "../constants/config";
 import type { Color, ColorMode, ConversionMethod, Size, CompressionFormat } from "../types";
-import type { ValidationResult } from "./errorHandling";
-import { validateHexString, validateHexValue } from "./errorHandling";
 import { compressGen1, formatGen1Hex } from "./gen1Compressor";
 import { decompressGen1, parseGen1Hex } from "./gen1Decompressor";
 import { compressGen2, formatAsHex } from "./gen2Compressor";
 import { decompressGen2, parseCompressedHex } from "./gen2Decompressor";
+
+const COLOR_BITS: Record<Color, [number, number]> = {
+  white: [0, 0],
+  lightgray: [1, 0],
+  darkgray: [0, 1],
+  black: [1, 1],
+};
+
+const BITS_TO_COLOR: Record<string, Color> = {
+  "00": "white",
+  "10": "lightgray",
+  "01": "darkgray",
+  "11": "black",
+};
+
+export interface ValidationResult<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
 
 export interface DecompressionResult {
   success: boolean;
@@ -20,18 +37,12 @@ export const createInitialPixels = (size: Size): Color[][] => {
   );
 };
 
-const pixelToBits = (color: Color): [number, number] => {
-  const bits = COLOR_BITS[color];
-  return [bits[0], bits[1]];
-};
-
 const bitsToPixel = (bit1: string, bit2: string): Color => {
-  const key = `${bit1}${bit2}` as keyof typeof BITS_TO_COLOR;
-  const color = BITS_TO_COLOR[key];
+  const color = BITS_TO_COLOR[`${bit1}${bit2}`];
   if (!color) {
     throw new Error("Invalid bits combination");
   }
-  return color as Color;
+  return color;
 };
 
 export const pixelsToHex = (
@@ -49,7 +60,7 @@ export const pixelsToHex = (
       let bin1 = "";
       let bin2 = "";
       for (let x = x_start; x < x_start + 8; x++) {
-        const [bit1, bit2] = pixelToBits(pixels[x][y]);
+        const [bit1, bit2] = COLOR_BITS[pixels[x][y]];
         bin1 += bit1;
         bin2 += bit2;
       }
@@ -121,13 +132,18 @@ export const hexToPixels = (
   colorMode: ColorMode,
   onError?: (error: string) => void,
 ): ValidationResult<Color[][]> => {
-  const hexValidation = validateHexString(hex);
-  if (!hexValidation.success) {
-    if (onError) onError(hexValidation.error!);
-    return { success: false, error: hexValidation.error };
+  const cleanedHexValue = hex.replace(/\s+/g, "");
+  if (/[^a-fA-F0-9]/.test(cleanedHexValue)) {
+    const error = "Invalid characters detected in the HEX string.";
+    if (onError) onError(error);
+    return { success: false, error };
+  }
+  if (cleanedHexValue.length % 2 !== 0) {
+    const error = "The HEX string has an odd number of characters.";
+    if (onError) onError(error);
+    return { success: false, error };
   }
 
-  const cleanedHexValue = hexValidation.data!;
   let hexArray: string[] = [];
   for (let i = 0; i < cleanedHexValue.length; i += 2) {
     hexArray.push(cleanedHexValue.substring(i, i + 2));
@@ -144,18 +160,6 @@ export const hexToPixels = (
 
   if (hexArray.length > expectedLength) {
     hexArray = hexArray.slice(0, expectedLength);
-  }
-
-  for (const hexValue of hexArray) {
-    const validation = validateHexValue(hexValue);
-    if (!validation.success) {
-      if (onError) onError(validation.error!);
-      return {
-        success: false,
-        error: validation.error,
-        data: createInitialPixels({ width: 16, height: 16 }),
-      };
-    }
   }
 
   const pixels: Color[][] = Array(size.width)

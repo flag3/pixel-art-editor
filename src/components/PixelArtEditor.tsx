@@ -1,4 +1,3 @@
-import { GRID_CONFIG } from "../constants/config";
 import { usePixelState } from "../hooks/usePixelState";
 import { useHexConversion } from "../hooks/useHexConversion";
 import { usePixelDownload } from "../hooks/usePixelDownload";
@@ -15,13 +14,12 @@ import { Button } from "./ui/Button";
 import { ColorPicker } from "./ColorPicker";
 import { Grid } from "./Grid";
 import { Select } from "./ui/Select";
-import { Textarea } from "./ui/Textarea";
 import { useFileUpload } from "../hooks/useFileUpload";
 import { useState, useCallback } from "react";
 
 export default function PixelArtEditor() {
   const [colorMode, setColorMode] = useState<ColorMode>("fourColors");
-  const [gridSize, setGridSize] = useState<Size>(GRID_CONFIG.DEFAULT_SIZE);
+  const [gridSize, setGridSize] = useState<Size>({ width: 16, height: 16 });
   const [selectedColor, setSelectedColor] = useState<Color>("white");
   const { pixels, applyChange, undo, redo, canUndo, canRedo } = usePixelState(gridSize);
 
@@ -158,7 +156,7 @@ export default function PixelArtEditor() {
           {error}
         </div>
       )}
-      <Textarea
+      <textarea
         value={hexValue}
         onChange={(e) => setHexValue(e.target.value)}
         rows={colorMode === "fourColors" ? gridSize.height / 4 : gridSize.height / 8}

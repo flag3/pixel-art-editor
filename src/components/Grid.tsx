@@ -1,41 +1,39 @@
-import type { GridProps } from "../types";
-import { useEffect, useState, useCallback } from "react";
+import type { Color } from "../types";
+import { useEffect, useState } from "react";
+
+interface GridProps {
+  pixels: Color[][];
+  onPixelClick: (row: number, col: number) => void;
+}
 
 export const Grid = ({ pixels, onPixelClick }: GridProps) => {
   const [isMouseDown, setIsMouseDown] = useState(false);
   const width = pixels.length;
   const height = pixels[0]?.length ?? 0;
 
-  const handleStart = useCallback(
-    (row: number, col: number) => {
-      setIsMouseDown(true);
+  const handleStart = (row: number, col: number) => {
+    setIsMouseDown(true);
+    onPixelClick(row, col);
+  };
+
+  const handleEnd = () => setIsMouseDown(false);
+
+  const handleMove = (row: number, col: number) => {
+    if (isMouseDown) {
       onPixelClick(row, col);
-    },
-    [onPixelClick],
-  );
-
-  const handleEnd = useCallback(() => {
-    setIsMouseDown(false);
-  }, []);
-
-  const handleMove = useCallback(
-    (row: number, col: number) => {
-      if (isMouseDown) {
-        onPixelClick(row, col);
-      }
-    },
-    [isMouseDown, onPixelClick],
-  );
+    }
+  };
 
   useEffect(() => {
-    window.addEventListener("mouseup", handleEnd);
-    window.addEventListener("touchend", handleEnd);
+    const end = () => setIsMouseDown(false);
+    window.addEventListener("mouseup", end);
+    window.addEventListener("touchend", end);
 
     return () => {
-      window.removeEventListener("mouseup", handleEnd);
-      window.removeEventListener("touchend", handleEnd);
+      window.removeEventListener("mouseup", end);
+      window.removeEventListener("touchend", end);
     };
-  }, [handleEnd]);
+  }, []);
 
   return (
     <div className="grid">
