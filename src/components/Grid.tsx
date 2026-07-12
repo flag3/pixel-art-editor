@@ -42,7 +42,8 @@ export const Grid = ({ pixels, onPixelClick }: GridProps) => {
           {Array.from({ length: width }, (_, xIndex) => {
             const color = pixels[xIndex][yIndex];
             return (
-              <div
+              <button
+                type="button"
                 key={xIndex}
                 className={`pixel ${color}`}
                 onMouseDown={() => handleStart(xIndex, yIndex)}
@@ -61,18 +62,18 @@ export const Grid = ({ pixels, onPixelClick }: GridProps) => {
                 }}
                 onTouchEnd={handleEnd}
                 onKeyDown={(e) => {
+                  // preventDefault suppresses the native click activation, so
+                  // onPixelClick fires once per key press (no duplicate undo entry)
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
                     onPixelClick(xIndex, yIndex);
                   }
                 }}
-                role="button"
-                tabIndex={0}
                 aria-label={`Pixel row ${yIndex + 1}, column ${xIndex + 1}`}
                 data-row={xIndex}
                 data-col={yIndex}
                 style={{ touchAction: "none" }}
-              ></div>
+              ></button>
             );
           })}
         </div>

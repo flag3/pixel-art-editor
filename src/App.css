@@ -15,10 +15,16 @@
   display: flex;
 }
 
-.pixel {
+/* .pixel and .color-swatch are <button>s; the :hover selectors keep the
+   global button:hover styles from overriding their appearance */
+.pixel,
+.pixel:hover {
+  box-sizing: content-box;
   width: 20px;
   height: 20px;
+  padding: 0;
   border: 1px solid #ddd;
+  border-radius: 0;
 }
 
 :root {
@@ -28,19 +34,23 @@
   --black: rgb(0, 0, 0);
 }
 
-.white {
+.white,
+.white:hover {
   background-color: var(--white);
 }
 
-.lightgray {
+.lightgray,
+.lightgray:hover {
   background-color: var(--lightgray);
 }
 
-.darkgray {
+.darkgray,
+.darkgray:hover {
   background-color: var(--darkgray);
 }
 
-.black {
+.black,
+.black:hover {
   background-color: var(--black);
 }
 
@@ -49,15 +59,20 @@
   margin-bottom: 16px;
 }
 
-.color-swatch {
+.color-swatch,
+.color-swatch:hover {
+  box-sizing: content-box;
   width: 40px;
   height: 40px;
   margin: 0 10px;
+  padding: 0;
   border: 2px solid #ddd;
+  border-radius: 0;
   cursor: pointer;
 }
 
-.color-swatch.selected {
+.color-swatch.selected,
+.color-swatch.selected:hover {
   border: 2px solid #333;
 }
 

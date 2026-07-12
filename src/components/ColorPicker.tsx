@@ -12,20 +12,13 @@ export const ColorPicker = ({ colorMode, selectedColor, onColorSelect }: ColorPi
   return (
     <div className="color-picker">
       {availableColors.map((color) => (
-        <div
+        <button
+          type="button"
           key={color}
           className={`color-swatch ${color} ${selectedColor === color ? "selected" : ""}`}
           onClick={() => onColorSelect(color)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              onColorSelect(color);
-            }
-          }}
-          role="button"
-          tabIndex={0}
           aria-label={`Select ${color} color`}
-        ></div>
+        ></button>
       ))}
     </div>
   );
