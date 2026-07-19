@@ -44,11 +44,12 @@ export const useHexConversion = ({
       conversionMethod,
       colorMode,
       compressionFormat,
-      setError,
     );
     if (result.success && result.data) {
       onDecodeSuccess(result.data, result.detectedSize);
       setError(null);
+    } else {
+      setError(result.error ?? "Decode failed");
     }
   }, [hexValue, gridSize, conversionMethod, colorMode, compressionFormat, onDecodeSuccess]);
 

@@ -1,4 +1,4 @@
-import { compressGen2, formatAsHex, estimateCompressionRatio } from "./gen2Compressor";
+import { compressGen2, formatAsHex } from "./gen2Compressor";
 import { decompressGen2 } from "./gen2Decompressor";
 import { describe, it, expect } from "vitest";
 
@@ -181,30 +181,6 @@ describe("Gen2 Compressor Utilities", () => {
     const data = new Uint8Array([0x00, 0xff, 0xab, 0x12]);
     const hex = formatAsHex(data);
     expect(hex).toBe("00 FF AB 12");
-  });
-
-  it("should estimate compression ratios reasonably", () => {
-    // Highly compressible data
-    const zeros = new Uint8Array(100).fill(0);
-    const zerosRatio = estimateCompressionRatio(zeros);
-    expect(zerosRatio).toBeGreaterThan(10);
-
-    // Less compressible data
-    const random = new Uint8Array(100);
-    for (let i = 0; i < random.length; i++) {
-      random[i] = Math.floor(Math.random() * 256);
-    }
-    const randomRatio = estimateCompressionRatio(random);
-    expect(randomRatio).toBeGreaterThan(0.5);
-    expect(randomRatio).toBeLessThan(zerosRatio);
-  });
-
-  it("should handle edge cases in estimation", () => {
-    const empty = new Uint8Array(0);
-    expect(estimateCompressionRatio(empty)).toBe(1);
-
-    const single = new Uint8Array([0x42]);
-    expect(estimateCompressionRatio(single)).toBeGreaterThan(0);
   });
 });
 

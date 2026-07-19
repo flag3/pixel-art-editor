@@ -136,7 +136,7 @@ export function parseCompressedHex(hexString: string): Uint8Array | null {
 
   const bytes = new Uint8Array(cleanHex.length / 2);
   for (let i = 0; i < cleanHex.length; i += 2) {
-    const hex = cleanHex.substr(i, 2);
+    const hex = cleanHex.slice(i, i + 2);
     const byte = parseInt(hex, 16);
     if (isNaN(byte)) {
       return null;

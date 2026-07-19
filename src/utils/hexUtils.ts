@@ -24,10 +24,7 @@ export interface ValidationResult<T> {
   error?: string;
 }
 
-export interface DecompressionResult {
-  success: boolean;
-  data?: Color[][];
-  error?: string;
+export interface DecompressionResult extends ValidationResult<Color[][]> {
   detectedSize?: Size;
 }
 
@@ -101,28 +98,20 @@ export const pixelsToHex = (
 
   const hexString = result.join(" ");
 
-  // Apply compression if requested
-  if (compressionFormat === "gen1" || compressionFormat === "gen2") {
-    try {
-      const hexBytes = hexString.replace(/\s+/g, "");
-      const bytes = new Uint8Array(hexBytes.length / 2);
-      for (let i = 0; i < hexBytes.length; i += 2) {
-        bytes[i / 2] = parseInt(hexBytes.substr(i, 2), 16);
-      }
-
-      if (compressionFormat === "gen1") {
-        const compressed = compressGen1(bytes);
-        return formatGen1Hex(compressed);
-      } else if (compressionFormat === "gen2") {
-        const compressed = compressGen2(bytes);
-        return formatAsHex(compressed);
-      }
-    } catch {
-      return hexString;
-    }
+  if (compressionFormat === "none") {
+    return hexString;
   }
 
-  return hexString;
+  try {
+    const bytes = parseGen1Hex(hexString);
+    return compressionFormat === "gen1"
+      ? formatGen1Hex(compressGen1(bytes))
+      : formatAsHex(compressGen2(bytes));
+  } catch {
+    // ponytail: compression failure (e.g. gen1 on a non-square sprite) silently
+    // falls back to uncompressed hex — surface an error if users get confused
+    return hexString;
+  }
 };
 
 export const hexToPixels = (
@@ -130,18 +119,13 @@ export const hexToPixels = (
   size: Size,
   conversionMethod: ConversionMethod,
   colorMode: ColorMode,
-  onError?: (error: string) => void,
 ): ValidationResult<Color[][]> => {
   const cleanedHexValue = hex.replace(/\s+/g, "");
   if (/[^a-fA-F0-9]/.test(cleanedHexValue)) {
-    const error = "Invalid characters detected in the HEX string.";
-    if (onError) onError(error);
-    return { success: false, error };
+    return { success: false, error: "Invalid characters detected in the HEX string." };
   }
   if (cleanedHexValue.length % 2 !== 0) {
-    const error = "The HEX string has an odd number of characters.";
-    if (onError) onError(error);
-    return { success: false, error };
+    return { success: false, error: "The HEX string has an odd number of characters." };
   }
 
   let hexArray: string[] = [];
@@ -162,9 +146,7 @@ export const hexToPixels = (
     hexArray = hexArray.slice(0, expectedLength);
   }
 
-  const pixels: Color[][] = Array(size.width)
-    .fill(null)
-    .map(() => Array(size.height).fill("white") as Color[]);
+  const pixels = createInitialPixels(size);
 
   let hexIndex = 0;
 
@@ -219,73 +201,40 @@ export const hexToPixelsWithDecompression = (
   conversionMethod: ConversionMethod,
   colorMode: ColorMode,
   compressionFormat: CompressionFormat,
-  onError?: (error: string) => void,
 ): DecompressionResult => {
-  if (compressionFormat === "gen1") {
-    try {
-      const compressedBytes = parseGen1Hex(hex);
-
-      // Auto-detect Gen1 image size from first byte
-      const width = (compressedBytes[0] >> 4) & 0xf; // Upper 4 bits
-      const height = compressedBytes[0] & 0xf; // Lower 4 bits
-      const autoDetectedSize = {
-        width: width * 8, // Convert tiles to pixels
-        height: height * 8,
-      };
-
-      const decompressedBytes = decompressGen1(compressedBytes);
-      const decompressedHex = Array.from(decompressedBytes)
-        .map((byte) => byte.toString(16).padStart(2, "0").toUpperCase())
-        .join(" ");
-
-      const result = hexToPixels(
-        decompressedHex,
-        autoDetectedSize,
-        conversionMethod,
-        colorMode,
-        onError,
-      );
-      if (result.success) {
-        return {
-          success: true,
-          data: result.data,
-          detectedSize: autoDetectedSize,
-        };
-      } else {
-        return { success: false, error: result.error };
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Gen1 decompression failed";
-      if (onError) onError(errorMessage);
-      return { success: false, error: errorMessage };
-    }
-  } else if (compressionFormat === "gen2") {
-    const compressedBytes = parseCompressedHex(hex);
-    if (!compressedBytes) {
-      const error = "Invalid hex format for compressed data";
-      if (onError) onError(error);
-      return { success: false, error };
-    }
-
-    try {
-      const decompressedBytes = decompressGen2(compressedBytes);
-      const decompressedHex = Array.from(decompressedBytes)
-        .map((byte) => byte.toString(16).padStart(2, "0").toUpperCase())
-        .join(" ");
-
-      const result = hexToPixels(decompressedHex, size, conversionMethod, colorMode, onError);
-      return {
-        success: result.success,
-        data: result.data,
-        error: result.error,
-      };
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Decompression failed";
-      if (onError) onError(errorMessage);
-      return { success: false, error: errorMessage };
-    }
+  if (compressionFormat === "none") {
+    return hexToPixels(hex, size, conversionMethod, colorMode);
   }
 
-  const result = hexToPixels(hex, size, conversionMethod, colorMode, onError);
-  return { success: result.success, data: result.data, error: result.error };
+  try {
+    let decompressedBytes: Uint8Array;
+    let detectedSize: Size | undefined;
+
+    if (compressionFormat === "gen1") {
+      const compressedBytes = parseGen1Hex(hex);
+      // Gen1 stores the sprite size (in tiles) in the first byte's nybbles
+      detectedSize = {
+        width: ((compressedBytes[0] >> 4) & 0xf) * 8,
+        height: (compressedBytes[0] & 0xf) * 8,
+      };
+      decompressedBytes = decompressGen1(compressedBytes);
+    } else {
+      const compressedBytes = parseCompressedHex(hex);
+      if (!compressedBytes) {
+        return { success: false, error: "Invalid hex format for compressed data" };
+      }
+      decompressedBytes = decompressGen2(compressedBytes);
+    }
+
+    const result = hexToPixels(
+      formatGen1Hex(decompressedBytes),
+      detectedSize ?? size,
+      conversionMethod,
+      colorMode,
+    );
+    return { ...result, detectedSize };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "Decompression failed";
+    return { success: false, error: errorMessage };
+  }
 };
