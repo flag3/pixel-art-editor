@@ -1,10 +1,11 @@
-import { decompressGen2, parseCompressedHex } from "./gen2Decompressor";
+import { decompressGen2 } from "./gen2Decompressor";
+import { hexToBytes } from "./hexUtils";
 import { describe, it, expect } from "vitest";
 
 describe("Gen2 Decompressor", () => {
   it("should parse hex string correctly", () => {
     const hexString = "00 05 48 65 6C 6C 6F FF";
-    const bytes = parseCompressedHex(hexString);
+    const bytes = hexToBytes(hexString);
     expect(bytes).toEqual(new Uint8Array([0x00, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0xff]));
   });
 

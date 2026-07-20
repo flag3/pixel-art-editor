@@ -1,24 +1,25 @@
 import { compressGen1 } from "./gen1Compressor";
-import { Gen1Decompressor, decompressGen1, parseGen1Hex } from "./gen1Decompressor";
+import { hexToBytes } from "./hexUtils";
+import { Gen1Decompressor, decompressGen1 } from "./gen1Decompressor";
 import { describe, it, expect } from "vitest";
 
 describe("Gen1Decompressor", () => {
-  describe("parseGen1Hex", () => {
+  describe("hexToBytes", () => {
     it("should parse valid hex strings", () => {
       const hex = "48 65 6C 6C 6F";
-      const result = parseGen1Hex(hex);
+      const result = hexToBytes(hex);
       expect(result).toEqual(new Uint8Array([0x48, 0x65, 0x6c, 0x6c, 0x6f]));
     });
 
     it("should handle hex strings without spaces", () => {
       const hex = "48656C6C6F";
-      const result = parseGen1Hex(hex);
+      const result = hexToBytes(hex);
       expect(result).toEqual(new Uint8Array([0x48, 0x65, 0x6c, 0x6c, 0x6f]));
     });
 
     it("should handle lowercase hex strings", () => {
       const hex = "48656c6c6f";
-      const result = parseGen1Hex(hex);
+      const result = hexToBytes(hex);
       expect(result).toEqual(new Uint8Array([0x48, 0x65, 0x6c, 0x6c, 0x6f]));
     });
 
@@ -27,17 +28,17 @@ describe("Gen1Decompressor", () => {
         48 65 6C
         6C 6F
       `;
-      const result = parseGen1Hex(hex);
+      const result = hexToBytes(hex);
       expect(result).toEqual(new Uint8Array([0x48, 0x65, 0x6c, 0x6c, 0x6f]));
     });
 
     it("should throw error on invalid hex characters", () => {
       const hex = "48 65 GG";
-      expect(() => parseGen1Hex(hex)).toThrow("Invalid hex string");
+      expect(() => hexToBytes(hex)).toThrow("Invalid hex string");
     });
 
     it("should handle empty string", () => {
-      const result = parseGen1Hex("");
+      const result = hexToBytes("");
       expect(result).toEqual(new Uint8Array(0));
     });
   });
@@ -115,7 +116,7 @@ describe("Gen1Decompressor", () => {
         6D CB F7 FF
       `;
 
-      const compressed = parseGen1Hex(compressedHex);
+      const compressed = hexToBytes(compressedHex);
 
       expect(() => decompressGen1(compressed)).not.toThrow();
 

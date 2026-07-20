@@ -294,9 +294,3 @@ export function compressGen1(data: Uint8Array, width?: number): Uint8Array {
   const compressor = new Gen1Compressor();
   return compressor.compress(data, width);
 }
-
-export function formatGen1Hex(data: Uint8Array): string {
-  return Array.from(data)
-    .map((byte) => byte.toString(16).padStart(2, "0").toUpperCase())
-    .join(" ");
-}

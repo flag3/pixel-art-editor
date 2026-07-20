@@ -1,5 +1,6 @@
-import { compressGen1, formatGen1Hex, Gen1Compressor } from "./gen1Compressor";
-import { decompressGen1, parseGen1Hex } from "./gen1Decompressor";
+import { compressGen1, Gen1Compressor } from "./gen1Compressor";
+import { bytesToHex, hexToBytes } from "./hexUtils";
+import { decompressGen1 } from "./gen1Decompressor";
 import { describe, it, expect } from "vitest";
 
 describe("Pokemon Red/Blue Compression", () => {
@@ -176,7 +177,7 @@ describe("Pokemon Red/Blue Compression", () => {
 
   it("should format hex output correctly", () => {
     const testData = new Uint8Array([0x12, 0x34, 0xab, 0xcd]);
-    const formatted = formatGen1Hex(testData);
+    const formatted = bytesToHex(testData);
     expect(formatted).toBe("12 34 AB CD");
   });
 
@@ -280,7 +281,7 @@ describe("Pokemon Red/Blue Comprehensive Test", () => {
     `;
 
     // Parse the hex data
-    const compressedBytes = parseGen1Hex(hexString);
+    const compressedBytes = hexToBytes(hexString);
     console.log(`✓ Parsed ${compressedBytes.length} compressed bytes`);
 
     // Step 1: Decompress the original data
@@ -384,7 +385,7 @@ describe("Pokemon Red/Blue Comprehensive Test", () => {
     `;
 
     // Parse and decompress
-    const originalCompressed = parseGen1Hex(providedHex);
+    const originalCompressed = hexToBytes(providedHex);
     const decompressedData = decompressGen1(originalCompressed);
 
     console.log(
@@ -430,7 +431,7 @@ describe("Pokemon Red/Blue Comprehensive Test", () => {
     `;
 
     // Parse and decompress to get the original image data
-    const originalCompressed = parseGen1Hex(providedHex);
+    const originalCompressed = hexToBytes(providedHex);
     const decompressedData = decompressGen1(originalCompressed);
 
     // Verify it's a 5x5 sprite
@@ -584,7 +585,7 @@ describe("Pokemon Red/Blue Comprehensive Test", () => {
         method.swap,
         method.mode,
       );
-      const hexOutput = formatGen1Hex(compressed);
+      const hexOutput = bytesToHex(compressed);
 
       // Parse expected output (remove whitespace and convert to uppercase)
       const expectedHex = expectedOutputs[index].replace(/\s+/g, " ").trim().toUpperCase();
@@ -628,7 +629,7 @@ describe("Pokemon Red/Blue Comprehensive Test", () => {
       if (compressed.length < bestSize) {
         bestSize = compressed.length;
         bestMethod = { ...method, index: index + 1 };
-        bestHex = formatGen1Hex(compressed);
+        bestHex = bytesToHex(compressed);
       }
     });
 

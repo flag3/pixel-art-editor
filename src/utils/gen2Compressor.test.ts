@@ -1,4 +1,5 @@
-import { compressGen2, formatAsHex } from "./gen2Compressor";
+import { compressGen2 } from "./gen2Compressor";
+import { bytesToHex } from "./hexUtils";
 import { decompressGen2 } from "./gen2Decompressor";
 import { describe, it, expect } from "vitest";
 
@@ -179,7 +180,7 @@ describe("Gen2 Compressor", () => {
 describe("Gen2 Compressor Utilities", () => {
   it("should format hex correctly", () => {
     const data = new Uint8Array([0x00, 0xff, 0xab, 0x12]);
-    const hex = formatAsHex(data);
+    const hex = bytesToHex(data);
     expect(hex).toBe("00 FF AB 12");
   });
 });

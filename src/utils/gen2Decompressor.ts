@@ -126,23 +126,3 @@ export function decompressGen2(compressed: Uint8Array): Uint8Array {
 
   return new Uint8Array(output);
 }
-
-export function parseCompressedHex(hexString: string): Uint8Array | null {
-  const cleanHex = hexString.replace(/\s+/g, "").replace(/^0x/i, "");
-
-  if (cleanHex.length % 2 !== 0) {
-    return null;
-  }
-
-  const bytes = new Uint8Array(cleanHex.length / 2);
-  for (let i = 0; i < cleanHex.length; i += 2) {
-    const hex = cleanHex.slice(i, i + 2);
-    const byte = parseInt(hex, 16);
-    if (isNaN(byte)) {
-      return null;
-    }
-    bytes[i / 2] = byte;
-  }
-
-  return bytes;
-}

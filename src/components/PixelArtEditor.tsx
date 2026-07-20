@@ -1,7 +1,7 @@
 import { usePixelState } from "../hooks/usePixelState";
 import { useHexConversion } from "../hooks/useHexConversion";
 import { usePixelDownload } from "../hooks/usePixelDownload";
-import type { Color, ColorMode, ConversionMethod, CompressionFormat, Size } from "../types";
+import type { Color, ColorMode, SelectOption, Size } from "../types";
 import {
   colorModeOptions,
   conversionMethodOptions,
@@ -32,6 +32,31 @@ const ClearIcon = () => <Icon icon="material-symbols:delete-outline" width={16} 
 const DownloadIcon = () => <Icon icon="material-symbols:download" width={16} height={16} />;
 const EncodeIcon = () => <Icon icon="material-symbols:code" width={16} height={16} />;
 const DecodeIcon = () => <Icon icon="material-symbols:grid-on-outline" width={16} height={16} />;
+
+interface SelectFieldProps<T extends string> {
+  label: string;
+  value: T;
+  options: SelectOption<T>[];
+  onChange: (value: T) => void;
+}
+
+const SelectField = <T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+}: SelectFieldProps<T>) => (
+  <FormControl>
+    <FormControl.Label>{label}</FormControl.Label>
+    <Select value={value} onChange={(event) => onChange(event.target.value as T)}>
+      {options.map((option) => (
+        <Select.Option key={option.value} value={option.value}>
+          {option.label}
+        </Select.Option>
+      ))}
+    </Select>
+  </FormControl>
+);
 
 export default function PixelArtEditor() {
   const [colorMode, setColorMode] = useState<ColorMode>("fourColors");
@@ -91,47 +116,24 @@ export default function PixelArtEditor() {
   return (
     <Stack direction="vertical" gap="spacious" align="center">
       <Stack direction="horizontal" gap="normal" wrap="wrap" justify="center">
-        <FormControl>
-          <FormControl.Label>Color Mode</FormControl.Label>
-          <Select
-            value={colorMode}
-            onChange={(event) => {
-              setColorMode(event.target.value as ColorMode);
-            }}
-          >
-            {colorModeOptions.map((option) => (
-              <Select.Option key={option.value} value={option.value}>
-                {option.label}
-              </Select.Option>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl>
-          <FormControl.Label>Width</FormControl.Label>
-          <Select
-            value={gridSize.width.toString()}
-            onChange={(e) => handleGridSizeChange("width", Number(e.target.value))}
-          >
-            {widthOptions.map((option) => (
-              <Select.Option key={option.value} value={option.value}>
-                {option.label}
-              </Select.Option>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl>
-          <FormControl.Label>Height</FormControl.Label>
-          <Select
-            value={gridSize.height.toString()}
-            onChange={(e) => handleGridSizeChange("height", Number(e.target.value))}
-          >
-            {heightOptions.map((option) => (
-              <Select.Option key={option.value} value={option.value}>
-                {option.label}
-              </Select.Option>
-            ))}
-          </Select>
-        </FormControl>
+        <SelectField
+          label="Color Mode"
+          value={colorMode}
+          options={colorModeOptions}
+          onChange={setColorMode}
+        />
+        <SelectField
+          label="Width"
+          value={gridSize.width.toString()}
+          options={widthOptions}
+          onChange={(value) => handleGridSizeChange("width", Number(value))}
+        />
+        <SelectField
+          label="Height"
+          value={gridSize.height.toString()}
+          options={heightOptions}
+          onChange={(value) => handleGridSizeChange("height", Number(value))}
+        />
       </Stack>
       <Stack direction="vertical" gap="normal" align="center">
         <ColorPicker
@@ -165,32 +167,18 @@ export default function PixelArtEditor() {
       </Stack>
       <Stack direction="vertical" gap="normal" align="center">
         <Stack direction="horizontal" gap="normal" wrap="wrap" justify="center">
-          <FormControl>
-            <FormControl.Label>Conversion Method</FormControl.Label>
-            <Select
-              value={conversionMethod}
-              onChange={(event) => setConversionMethod(event.target.value as ConversionMethod)}
-            >
-              {conversionMethodOptions.map((option) => (
-                <Select.Option key={option.value} value={option.value}>
-                  {option.label}
-                </Select.Option>
-              ))}
-            </Select>
-          </FormControl>
-          <FormControl>
-            <FormControl.Label>Compression Format</FormControl.Label>
-            <Select
-              value={compressionFormat}
-              onChange={(event) => setCompressionFormat(event.target.value as CompressionFormat)}
-            >
-              {compressionFormatOptions.map((option) => (
-                <Select.Option key={option.value} value={option.value}>
-                  {option.label}
-                </Select.Option>
-              ))}
-            </Select>
-          </FormControl>
+          <SelectField
+            label="Conversion Method"
+            value={conversionMethod}
+            options={conversionMethodOptions}
+            onChange={setConversionMethod}
+          />
+          <SelectField
+            label="Compression Format"
+            value={compressionFormat}
+            options={compressionFormatOptions}
+            onChange={setCompressionFormat}
+          />
         </Stack>
         {error && <Flash variant="danger">{error}</Flash>}
         <FormControl className="hex-form">

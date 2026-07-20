@@ -1,8 +1,25 @@
 import type { Color, ColorMode, ConversionMethod, Size, CompressionFormat } from "../types";
-import { compressGen1, formatGen1Hex } from "./gen1Compressor";
-import { decompressGen1, parseGen1Hex } from "./gen1Decompressor";
-import { compressGen2, formatAsHex } from "./gen2Compressor";
-import { decompressGen2, parseCompressedHex } from "./gen2Decompressor";
+import { compressGen1 } from "./gen1Compressor";
+import { decompressGen1 } from "./gen1Decompressor";
+import { compressGen2 } from "./gen2Compressor";
+import { decompressGen2 } from "./gen2Decompressor";
+
+export const hexToBytes = (hex: string): Uint8Array => {
+  const cleanHex = hex.replace(/\s+/g, "").replace(/^0x/i, "").toUpperCase();
+  if (!/^[0-9A-F]*$/.test(cleanHex) || cleanHex.length % 2 !== 0) {
+    throw new Error("Invalid hex string");
+  }
+  const bytes = new Uint8Array(cleanHex.length / 2);
+  for (let i = 0; i < cleanHex.length; i += 2) {
+    bytes[i / 2] = parseInt(cleanHex.slice(i, i + 2), 16);
+  }
+  return bytes;
+};
+
+export const bytesToHex = (data: Uint8Array): string =>
+  Array.from(data)
+    .map((byte) => byte.toString(16).padStart(2, "0").toUpperCase())
+    .join(" ");
 
 const COLOR_BITS: Record<Color, [number, number]> = {
   white: [0, 0],
@@ -103,10 +120,10 @@ export const pixelsToHex = (
   }
 
   try {
-    const bytes = parseGen1Hex(hexString);
+    const bytes = hexToBytes(hexString);
     return compressionFormat === "gen1"
-      ? formatGen1Hex(compressGen1(bytes))
-      : formatAsHex(compressGen2(bytes));
+      ? bytesToHex(compressGen1(bytes))
+      : bytesToHex(compressGen2(bytes));
   } catch {
     // ponytail: compression failure (e.g. gen1 on a non-square sprite) silently
     // falls back to uncompressed hex — surface an error if users get confused
@@ -210,8 +227,8 @@ export const hexToPixelsWithDecompression = (
     let decompressedBytes: Uint8Array;
     let detectedSize: Size | undefined;
 
+    const compressedBytes = hexToBytes(hex);
     if (compressionFormat === "gen1") {
-      const compressedBytes = parseGen1Hex(hex);
       // Gen1 stores the sprite size (in tiles) in the first byte's nybbles
       detectedSize = {
         width: ((compressedBytes[0] >> 4) & 0xf) * 8,
@@ -219,15 +236,11 @@ export const hexToPixelsWithDecompression = (
       };
       decompressedBytes = decompressGen1(compressedBytes);
     } else {
-      const compressedBytes = parseCompressedHex(hex);
-      if (!compressedBytes) {
-        return { success: false, error: "Invalid hex format for compressed data" };
-      }
       decompressedBytes = decompressGen2(compressedBytes);
     }
 
     const result = hexToPixels(
-      formatGen1Hex(decompressedBytes),
+      bytesToHex(decompressedBytes),
       detectedSize ?? size,
       conversionMethod,
       colorMode,

@@ -520,12 +520,3 @@ function writeCommandToBytes(output: number[], command: Command, inputData: Uint
     }
   }
 }
-
-/**
- * Format byte array as hex string
- */
-export function formatAsHex(data: Uint8Array): string {
-  return Array.from(data)
-    .map((byte) => byte.toString(16).toUpperCase().padStart(2, "0"))
-    .join(" ");
-}
