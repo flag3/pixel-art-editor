@@ -10,13 +10,28 @@ import {
   heightOptions,
 } from "../constants/options";
 import { createInitialPixels } from "../utils/hexUtils";
-import { Button } from "./ui/Button";
 import { ColorPicker } from "./ColorPicker";
 import { Grid } from "./Grid";
-import { Select } from "./ui/Select";
 import { useFileUpload } from "../hooks/useFileUpload";
-import { ButtonGroup, Flash, FormControl, Stack, Textarea } from "@primer/react";
+import { Icon } from "@iconify/react";
+import {
+  ButtonGroup,
+  Flash,
+  FormControl,
+  IconButton,
+  Select,
+  Stack,
+  Textarea,
+} from "@primer/react";
 import { useState, useCallback } from "react";
+
+const UploadIcon = () => <Icon icon="material-symbols:upload" width={16} height={16} />;
+const UndoIcon = () => <Icon icon="material-symbols:undo" width={16} height={16} />;
+const RedoIcon = () => <Icon icon="material-symbols:redo" width={16} height={16} />;
+const ClearIcon = () => <Icon icon="material-symbols:delete-outline" width={16} height={16} />;
+const DownloadIcon = () => <Icon icon="material-symbols:download" width={16} height={16} />;
+const EncodeIcon = () => <Icon icon="material-symbols:code" width={16} height={16} />;
+const DecodeIcon = () => <Icon icon="material-symbols:grid-on-outline" width={16} height={16} />;
 
 export default function PixelArtEditor() {
   const [colorMode, setColorMode] = useState<ColorMode>("fourColors");
@@ -83,24 +98,39 @@ export default function PixelArtEditor() {
             onChange={(event) => {
               setColorMode(event.target.value as ColorMode);
             }}
-            options={colorModeOptions}
-          />
+          >
+            {colorModeOptions.map((option) => (
+              <Select.Option key={option.value} value={option.value}>
+                {option.label}
+              </Select.Option>
+            ))}
+          </Select>
         </FormControl>
         <FormControl>
           <FormControl.Label>Width</FormControl.Label>
           <Select
             value={gridSize.width.toString()}
             onChange={(e) => handleGridSizeChange("width", Number(e.target.value))}
-            options={widthOptions}
-          />
+          >
+            {widthOptions.map((option) => (
+              <Select.Option key={option.value} value={option.value}>
+                {option.label}
+              </Select.Option>
+            ))}
+          </Select>
         </FormControl>
         <FormControl>
           <FormControl.Label>Height</FormControl.Label>
           <Select
             value={gridSize.height.toString()}
             onChange={(e) => handleGridSizeChange("height", Number(e.target.value))}
-            options={heightOptions}
-          />
+          >
+            {heightOptions.map((option) => (
+              <Select.Option key={option.value} value={option.value}>
+                {option.label}
+              </Select.Option>
+            ))}
+          </Select>
         </FormControl>
       </Stack>
       <Stack direction="vertical" gap="normal" align="center">
@@ -118,17 +148,17 @@ export default function PixelArtEditor() {
           onChange={handleUploadChange}
         />
         <ButtonGroup>
-          <Button icon="material-symbols:upload" label="Upload image" onClick={handleUploadClick} />
-          <Button icon="material-symbols:undo" label="Undo" onClick={undo} disabled={!canUndo} />
-          <Button icon="material-symbols:redo" label="Redo" onClick={redo} disabled={!canRedo} />
-          <Button
-            icon="material-symbols:delete-outline"
-            label="Clear grid"
+          <IconButton icon={UploadIcon} aria-label="Upload image" onClick={handleUploadClick} />
+          <IconButton icon={UndoIcon} aria-label="Undo" onClick={undo} disabled={!canUndo} />
+          <IconButton icon={RedoIcon} aria-label="Redo" onClick={redo} disabled={!canRedo} />
+          <IconButton
+            icon={ClearIcon}
+            aria-label="Clear grid"
             onClick={() => applyChange(createInitialPixels(gridSize))}
           />
-          <Button
-            icon="material-symbols:download"
-            label="Download image"
+          <IconButton
+            icon={DownloadIcon}
+            aria-label="Download image"
             onClick={handleFileDownload}
           />
         </ButtonGroup>
@@ -140,16 +170,26 @@ export default function PixelArtEditor() {
             <Select
               value={conversionMethod}
               onChange={(event) => setConversionMethod(event.target.value as ConversionMethod)}
-              options={conversionMethodOptions}
-            />
+            >
+              {conversionMethodOptions.map((option) => (
+                <Select.Option key={option.value} value={option.value}>
+                  {option.label}
+                </Select.Option>
+              ))}
+            </Select>
           </FormControl>
           <FormControl>
             <FormControl.Label>Compression Format</FormControl.Label>
             <Select
               value={compressionFormat}
               onChange={(event) => setCompressionFormat(event.target.value as CompressionFormat)}
-              options={compressionFormatOptions}
-            />
+            >
+              {compressionFormatOptions.map((option) => (
+                <Select.Option key={option.value} value={option.value}>
+                  {option.label}
+                </Select.Option>
+              ))}
+            </Select>
           </FormControl>
         </Stack>
         {error && <Flash variant="danger">{error}</Flash>}
@@ -165,12 +205,8 @@ export default function PixelArtEditor() {
           />
         </FormControl>
         <ButtonGroup>
-          <Button icon="material-symbols:code" label="Encode to hex" onClick={handleEncode} />
-          <Button
-            icon="material-symbols:grid-on-outline"
-            label="Decode from hex"
-            onClick={handleDecode}
-          />
+          <IconButton icon={EncodeIcon} aria-label="Encode to hex" onClick={handleEncode} />
+          <IconButton icon={DecodeIcon} aria-label="Decode from hex" onClick={handleDecode} />
         </ButtonGroup>
       </Stack>
     </Stack>
