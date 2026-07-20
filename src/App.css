@@ -1,30 +1,20 @@
-#root {
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
-
 .grid {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  margin-bottom: 10px;
 }
 
 .row {
   display: flex;
 }
 
-/* .pixel and .color-swatch are <button>s; the :hover selectors keep the
-   global button:hover styles from overriding their appearance */
-.pixel,
-.pixel:hover {
+.pixel {
   box-sizing: content-box;
   width: 20px;
   height: 20px;
   padding: 0;
-  border: 1px solid #ddd;
+  border: 1px solid var(--borderColor-default, #ddd);
   border-radius: 0;
+  cursor: pointer;
 }
 
 :root {
@@ -34,105 +24,49 @@
   --black: rgb(0, 0, 0);
 }
 
-.white,
-.white:hover {
+.white {
   background-color: var(--white);
 }
 
-.lightgray,
-.lightgray:hover {
+.lightgray {
   background-color: var(--lightgray);
 }
 
-.darkgray,
-.darkgray:hover {
+.darkgray {
   background-color: var(--darkgray);
 }
 
-.black,
-.black:hover {
+.black {
   background-color: var(--black);
 }
 
 .color-picker {
   display: flex;
-  margin-bottom: 16px;
+  gap: 16px;
 }
 
-.color-swatch,
-.color-swatch:hover {
+.color-swatch {
   box-sizing: content-box;
   width: 40px;
   height: 40px;
-  margin: 0 10px;
   padding: 0;
-  border: 2px solid #ddd;
+  border: 2px solid var(--borderColor-default, #ddd);
   border-radius: 0;
   cursor: pointer;
 }
 
-.color-swatch.selected,
-.color-swatch.selected:hover {
-  border: 2px solid #333;
-}
-
-.container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.color-swatch.selected {
+  border-color: var(--fgColor-default, #333);
 }
 
 .hidden-input {
   display: none;
 }
 
-.button-container {
-  display: flex;
+.hex-textarea {
+  font-family: var(--fontStack-monospace, monospace);
 }
 
-.button-container > button {
-  margin: 0 5px;
-}
-
-.container > div:not(:last-child) {
-  margin-bottom: 24px;
-}
-
-.grid-size-selector,
-.conversion-method {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-}
-
-select {
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  appearance: none;
-  font-size: 16px;
-}
-
-button {
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: none;
-  background-color: #333;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  font-size: 16px;
-}
-
-button svg {
-  width: 24px;
-  height: 24px;
-}
-
-button:hover {
-  background-color: #555;
-}
-
-button:disabled {
-  background-color: #aaa;
-  cursor: not-allowed;
+.hex-form {
+  width: min(640px, 90vw);
 }

@@ -1,15 +1,18 @@
-import { Icon } from "@iconify/react";
+import { createIconComponent } from "./icon";
+import { IconButton } from "@primer/react";
+import { useMemo } from "react";
 
 interface ButtonProps {
   icon: string;
+  label: string;
   onClick: () => void;
   disabled?: boolean;
 }
 
-export const Button = ({ icon, onClick, disabled = false }: ButtonProps) => {
+export const Button = ({ icon, label, onClick, disabled = false }: ButtonProps) => {
+  const IconComponent = useMemo(() => createIconComponent(icon), [icon]);
+
   return (
-    <button onClick={onClick} disabled={disabled}>
-      <Icon icon={icon} />
-    </button>
+    <IconButton icon={IconComponent} aria-label={label} onClick={onClick} disabled={disabled} />
   );
 };

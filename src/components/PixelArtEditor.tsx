@@ -15,6 +15,7 @@ import { ColorPicker } from "./ColorPicker";
 import { Grid } from "./Grid";
 import { Select } from "./ui/Select";
 import { useFileUpload } from "../hooks/useFileUpload";
+import { ButtonGroup, Flash, FormControl, Stack, Textarea } from "@primer/react";
 import { useState, useCallback } from "react";
 
 export default function PixelArtEditor() {
@@ -73,10 +74,10 @@ export default function PixelArtEditor() {
   );
 
   return (
-    <div className="container">
-      <div className="color-mode-selector">
-        <label>
-          Color Mode{" "}
+    <Stack direction="vertical" gap="spacious" align="center">
+      <Stack direction="horizontal" gap="normal" wrap="wrap" justify="center">
+        <FormControl>
+          <FormControl.Label>Color Mode</FormControl.Label>
           <Select
             value={colorMode}
             onChange={(event) => {
@@ -84,33 +85,31 @@ export default function PixelArtEditor() {
             }}
             options={colorModeOptions}
           />
-        </label>
-      </div>
-      <div className="grid-size-selector">
-        <label>
-          Width{" "}
+        </FormControl>
+        <FormControl>
+          <FormControl.Label>Width</FormControl.Label>
           <Select
             value={gridSize.width.toString()}
             onChange={(e) => handleGridSizeChange("width", Number(e.target.value))}
             options={widthOptions}
           />
-        </label>
-        <label>
-          Height{" "}
+        </FormControl>
+        <FormControl>
+          <FormControl.Label>Height</FormControl.Label>
           <Select
             value={gridSize.height.toString()}
             onChange={(e) => handleGridSizeChange("height", Number(e.target.value))}
             options={heightOptions}
           />
-        </label>
-      </div>
-      <ColorPicker
-        colorMode={colorMode}
-        selectedColor={selectedColor}
-        onColorSelect={setSelectedColor}
-      />
-      <Grid pixels={pixels} onPixelClick={handlePixelClick} />
-      <div className="button-container">
+        </FormControl>
+      </Stack>
+      <Stack direction="vertical" gap="normal" align="center">
+        <ColorPicker
+          colorMode={colorMode}
+          selectedColor={selectedColor}
+          onColorSelect={setSelectedColor}
+        />
+        <Grid pixels={pixels} onPixelClick={handlePixelClick} />
         <input
           ref={inputRef}
           type="file"
@@ -118,50 +117,62 @@ export default function PixelArtEditor() {
           className="hidden-input"
           onChange={handleUploadChange}
         />
-        <Button icon="material-symbols:upload" onClick={handleUploadClick} />
-        <Button icon="material-symbols:undo" onClick={undo} disabled={!canUndo} />
-        <Button icon="material-symbols:redo" onClick={redo} disabled={!canRedo} />
-        <Button
-          icon="material-symbols:delete-outline"
-          onClick={() => applyChange(createInitialPixels(gridSize))}
-        />
-        <Button icon="material-symbols:download" onClick={handleFileDownload} />
-      </div>
-      <div className="conversion-method">
-        <label>
-          Conversion Method{" "}
-          <Select
-            value={conversionMethod}
-            onChange={(event) => setConversionMethod(event.target.value as ConversionMethod)}
-            options={conversionMethodOptions}
+        <ButtonGroup>
+          <Button icon="material-symbols:upload" label="Upload image" onClick={handleUploadClick} />
+          <Button icon="material-symbols:undo" label="Undo" onClick={undo} disabled={!canUndo} />
+          <Button icon="material-symbols:redo" label="Redo" onClick={redo} disabled={!canRedo} />
+          <Button
+            icon="material-symbols:delete-outline"
+            label="Clear grid"
+            onClick={() => applyChange(createInitialPixels(gridSize))}
           />
-        </label>
-      </div>
-      <div className="compression-format">
-        <label>
-          Compression Format{" "}
-          <Select
-            value={compressionFormat}
-            onChange={(event) => setCompressionFormat(event.target.value as CompressionFormat)}
-            options={compressionFormatOptions}
+          <Button
+            icon="material-symbols:download"
+            label="Download image"
+            onClick={handleFileDownload}
           />
-        </label>
-      </div>
-      <div className="button-container">
-        <Button icon="material-symbols:code" onClick={handleEncode} />
-        <Button icon="material-symbols:grid-on-outline" onClick={handleDecode} />
-      </div>
-      {error && (
-        <div className="error-message" style={{ color: "red", margin: "10px 0" }}>
-          {error}
-        </div>
-      )}
-      <textarea
-        value={hexValue}
-        onChange={(e) => setHexValue(e.target.value)}
-        rows={colorMode === "fourColors" ? gridSize.height / 4 : gridSize.height / 8}
-        cols={gridSize.width * 3 - 3}
-      />
-    </div>
+        </ButtonGroup>
+      </Stack>
+      <Stack direction="vertical" gap="normal" align="center">
+        <Stack direction="horizontal" gap="normal" wrap="wrap" justify="center">
+          <FormControl>
+            <FormControl.Label>Conversion Method</FormControl.Label>
+            <Select
+              value={conversionMethod}
+              onChange={(event) => setConversionMethod(event.target.value as ConversionMethod)}
+              options={conversionMethodOptions}
+            />
+          </FormControl>
+          <FormControl>
+            <FormControl.Label>Compression Format</FormControl.Label>
+            <Select
+              value={compressionFormat}
+              onChange={(event) => setCompressionFormat(event.target.value as CompressionFormat)}
+              options={compressionFormatOptions}
+            />
+          </FormControl>
+        </Stack>
+        {error && <Flash variant="danger">{error}</Flash>}
+        <FormControl className="hex-form">
+          <FormControl.Label>Hex Data</FormControl.Label>
+          <Textarea
+            block
+            className="hex-textarea"
+            value={hexValue}
+            onChange={(e) => setHexValue(e.target.value)}
+            rows={colorMode === "fourColors" ? gridSize.height / 4 : gridSize.height / 8}
+            resize="vertical"
+          />
+        </FormControl>
+        <ButtonGroup>
+          <Button icon="material-symbols:code" label="Encode to hex" onClick={handleEncode} />
+          <Button
+            icon="material-symbols:grid-on-outline"
+            label="Decode from hex"
+            onClick={handleDecode}
+          />
+        </ButtonGroup>
+      </Stack>
+    </Stack>
   );
 }
