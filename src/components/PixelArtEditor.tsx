@@ -31,8 +31,8 @@ const UndoIcon = () => <Icon icon="material-symbols:undo" width={16} height={16}
 const RedoIcon = () => <Icon icon="material-symbols:redo" width={16} height={16} />;
 const ClearIcon = () => <Icon icon="material-symbols:delete-outline" width={16} height={16} />;
 const DownloadIcon = () => <Icon icon="material-symbols:download" width={16} height={16} />;
-const EncodeIcon = () => <Icon icon="material-symbols:code" width={16} height={16} />;
-const DecodeIcon = () => <Icon icon="material-symbols:grid-on-outline" width={16} height={16} />;
+const EncodeIcon = () => <Icon icon="material-symbols:arrow-downward" width={16} height={16} />;
+const DecodeIcon = () => <Icon icon="material-symbols:arrow-upward" width={16} height={16} />;
 
 interface SelectFieldProps<T extends string> {
   label: string;
@@ -122,7 +122,7 @@ export default function PixelArtEditor() {
     <Stack direction="vertical" gap="spacious" align="center">
       <Stack direction="horizontal" gap="normal" wrap="wrap" justify="center">
         <SelectField
-          label="Color Mode"
+          label="Colors"
           value={colorMode}
           options={colorModeOptions}
           onChange={setColorMode}
@@ -171,19 +171,23 @@ export default function PixelArtEditor() {
         </ButtonGroup>
       </Stack>
       <Stack direction="vertical" gap="normal" align="center">
-        <Stack direction="horizontal" gap="normal" wrap="wrap" justify="center">
+        <Stack direction="horizontal" gap="normal" wrap="wrap" justify="center" align="end">
           <SelectField
-            label="Conversion Method"
+            label="Tile Order"
             value={conversionMethod}
             options={conversionMethodOptions}
             onChange={setConversionMethod}
           />
           <SelectField
-            label="Compression Format"
+            label="Compression"
             value={compressionFormat}
             options={compressionFormatOptions}
             onChange={setCompressionFormat}
           />
+          <ButtonGroup>
+            <IconButton icon={EncodeIcon} aria-label="Encode to hex" onClick={handleEncode} />
+            <IconButton icon={DecodeIcon} aria-label="Decode from hex" onClick={handleDecode} />
+          </ButtonGroup>
         </Stack>
         {error && <Flash variant="danger">{error}</Flash>}
         <FormControl className="hex-form">
@@ -197,10 +201,6 @@ export default function PixelArtEditor() {
             resize="vertical"
           />
         </FormControl>
-        <ButtonGroup>
-          <IconButton icon={EncodeIcon} aria-label="Encode to hex" onClick={handleEncode} />
-          <IconButton icon={DecodeIcon} aria-label="Decode from hex" onClick={handleDecode} />
-        </ButtonGroup>
       </Stack>
     </Stack>
   );

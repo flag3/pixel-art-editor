@@ -6,9 +6,9 @@ export const colorModeOptions: SelectOption<ColorMode>[] = [
 ];
 
 export const conversionMethodOptions: SelectOption<ConversionMethod>[] = [
-  { value: "leftToRight", label: "Left to Right, Top to Bottom" },
-  { value: "topToBottomLeft", label: "Top to Bottom, Left to Right" },
-  { value: "topToBottomRight", label: "Top to Bottom, Right to Left" },
+  { value: "leftToRight", label: "Rows" },
+  { value: "topToBottomLeft", label: "Columns" },
+  { value: "topToBottomRight", label: "Columns, reversed" },
 ];
 
 export const widthOptions: SelectOption[] = Array.from({ length: 20 }, (_, index) => {
@@ -22,7 +22,7 @@ export const heightOptions: SelectOption[] = Array.from({ length: 18 }, (_, inde
 });
 
 export const compressionFormatOptions: SelectOption<CompressionFormat>[] = [
-  { value: "none", label: "none" },
-  { value: "gen1", label: "gen1" },
-  { value: "gen2", label: "gen2" },
+  { value: "none", label: "None" },
+  { value: "gen1", label: "Gen 1" },
+  { value: "gen2", label: "Gen 2" },
 ];
