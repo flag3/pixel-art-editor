@@ -1,3 +1,4 @@
+/** Grid cell as [x, y], matching the pixels[x][y] data layout. */
 export type CellPoint = [number, number];
 
 export interface ViewTransform {

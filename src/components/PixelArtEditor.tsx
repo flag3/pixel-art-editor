@@ -107,10 +107,10 @@ export default function PixelArtEditor() {
 
   const handlePaintCells = useCallback(
     (cells: CellPoint[]) => {
-      const newPixels = pixels.map((row) => row.slice());
-      for (const [rowIndex, colIndex] of cells) {
-        if (newPixels[rowIndex]?.[colIndex] !== undefined) {
-          newPixels[rowIndex][colIndex] = selectedColor;
+      const newPixels = pixels.map((column) => column.slice());
+      for (const [x, y] of cells) {
+        if (newPixels[x]?.[y] !== undefined) {
+          newPixels[x][y] = selectedColor;
         }
       }
       applyChange(newPixels);

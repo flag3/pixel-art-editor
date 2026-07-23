@@ -10,10 +10,10 @@ export const usePixelDownload = (pixels: Color[][]) => {
 
     const computedStyle = getComputedStyle(document.documentElement);
 
-    pixels.forEach((row, rowIndex) => {
-      row.forEach((color, colIndex) => {
+    pixels.forEach((column, x) => {
+      column.forEach((color, y) => {
         ctx.fillStyle = computedStyle.getPropertyValue(`--${color}`);
-        ctx.fillRect(rowIndex, colIndex, 1, 1);
+        ctx.fillRect(x, y, 1, 1);
       });
     });
 

@@ -22,10 +22,10 @@ export const Grid = ({ pixels, onPaintCells }: GridProps) => {
   const width = pixels.length;
   const height = pixels[0]?.length ?? 0;
 
-  const handleStart = (row: number, col: number) => {
+  const handleStart = (x: number, y: number) => {
     isDrawingRef.current = true;
-    strokeRef.current = [[row, col]];
-    onPaintCells([[row, col]]);
+    strokeRef.current = [[x, y]];
+    onPaintCells([[x, y]]);
   };
 
   const handleEnd = useCallback(() => {
@@ -44,17 +44,17 @@ export const Grid = ({ pixels, onPaintCells }: GridProps) => {
     reset();
   }, [width, height, reset]);
 
-  const handleMove = (row: number, col: number) => {
+  const handleMove = (x: number, y: number) => {
     if (!isDrawingRef.current) return;
 
     const stroke = strokeRef.current;
     const lastCell = stroke[stroke.length - 1];
-    if (lastCell && lastCell[0] === row && lastCell[1] === col) return;
+    if (lastCell && lastCell[0] === x && lastCell[1] === y) return;
 
     // Interpolate from the previously painted cell so fast drags leave no gaps
     const segment = lastCell
-      ? getLinePoints(lastCell[0], lastCell[1], row, col).slice(1)
-      : [[row, col] as CellPoint];
+      ? getLinePoints(lastCell[0], lastCell[1], x, y).slice(1)
+      : [[x, y] as CellPoint];
     strokeRef.current = [...stroke, ...segment];
     onPaintCells(strokeRef.current);
   };
@@ -100,9 +100,9 @@ export const Grid = ({ pixels, onPaintCells }: GridProps) => {
                     const touch = e.touches[0];
                     const element = document.elementFromPoint(touch.clientX, touch.clientY);
                     if (element && element.classList.contains("pixel")) {
-                      const row = parseInt(element.getAttribute("data-row")!, 10);
-                      const col = parseInt(element.getAttribute("data-col")!, 10);
-                      handleMove(row, col);
+                      const x = parseInt(element.getAttribute("data-x")!, 10);
+                      const y = parseInt(element.getAttribute("data-y")!, 10);
+                      handleMove(x, y);
                     }
                   }}
                   onTouchEnd={() => {
@@ -122,8 +122,8 @@ export const Grid = ({ pixels, onPaintCells }: GridProps) => {
                     }
                   }}
                   aria-label={`Pixel row ${yIndex + 1}, column ${xIndex + 1}`}
-                  data-row={xIndex}
-                  data-col={yIndex}
+                  data-x={xIndex}
+                  data-y={yIndex}
                 ></button>
               );
             })}
