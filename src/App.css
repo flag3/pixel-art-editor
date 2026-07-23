@@ -1,6 +1,22 @@
+.grid-viewport {
+  width: max-content;
+  max-width: 100%;
+  overflow: hidden;
+  touch-action: none;
+}
+
 .grid {
+  transform-origin: 0 0;
+  /* Shrink cells so the whole grid always fits the viewport — no scrolling,
+     because scroll and touch drawing conflict on mobile */
+  --pixel-size: clamp(
+    2px,
+    min(calc((100vw - 4rem) / var(--grid-cols, 16)), calc(70vh / var(--grid-rows, 16))),
+    22px
+  );
   display: flex;
   flex-direction: column;
+  width: max-content;
 }
 
 .row {
@@ -8,9 +24,10 @@
 }
 
 .pixel {
-  box-sizing: content-box;
-  width: 20px;
-  height: 20px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  width: var(--pixel-size);
+  height: var(--pixel-size);
   padding: 0;
   border: 1px solid var(--borderColor-default, #ddd);
   border-radius: 0;
@@ -68,5 +85,5 @@
 }
 
 .hex-form {
-  width: min(640px, 90vw);
+  width: min(640px, calc(100vw - 4rem));
 }

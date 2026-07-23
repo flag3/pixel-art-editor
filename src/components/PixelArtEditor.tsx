@@ -10,6 +10,7 @@ import {
   heightOptions,
 } from "../constants/options";
 import { createInitialPixels } from "../utils/hexUtils";
+import type { CellPoint } from "../utils/gridUtils";
 import { ColorPicker } from "./ColorPicker";
 import { Grid } from "./Grid";
 import { useFileUpload } from "../hooks/useFileUpload";
@@ -104,10 +105,14 @@ export default function PixelArtEditor() {
     [gridSize, applyChange],
   );
 
-  const handlePixelClick = useCallback(
-    (rowIndex: number, colIndex: number) => {
+  const handlePaintCells = useCallback(
+    (cells: CellPoint[]) => {
       const newPixels = pixels.map((row) => row.slice());
-      newPixels[rowIndex][colIndex] = selectedColor;
+      for (const [rowIndex, colIndex] of cells) {
+        if (newPixels[rowIndex]?.[colIndex] !== undefined) {
+          newPixels[rowIndex][colIndex] = selectedColor;
+        }
+      }
       applyChange(newPixels);
     },
     [pixels, selectedColor, applyChange],
@@ -141,7 +146,7 @@ export default function PixelArtEditor() {
           selectedColor={selectedColor}
           onColorSelect={setSelectedColor}
         />
-        <Grid pixels={pixels} onPixelClick={handlePixelClick} />
+        <Grid pixels={pixels} onPaintCells={handlePaintCells} />
         <input
           ref={inputRef}
           type="file"
