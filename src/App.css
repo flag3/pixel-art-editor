@@ -63,17 +63,24 @@
 }
 
 .color-swatch {
-  box-sizing: content-box;
+  box-sizing: border-box;
   width: 40px;
   height: 40px;
   padding: 0;
-  border: 2px solid var(--borderColor-default, #ddd);
-  border-radius: 0;
+  border: var(--borderWidth-thin, 1px) solid var(--borderColor-default, #d1d9e0);
+  border-radius: var(--borderRadius-medium, 6px);
   cursor: pointer;
 }
 
 .color-swatch.selected {
-  border-color: var(--fgColor-default, #333);
+  border-color: var(--borderColor-accent-emphasis, #0969da);
+  outline: var(--borderWidth-thick, 2px) solid var(--borderColor-accent-emphasis, #0969da) !important;
+  outline-offset: -1px !important;
+}
+
+.color-swatch:focus-visible {
+  outline: var(--borderWidth-thick, 2px) solid var(--focus-outlineColor, #0969da);
+  outline-offset: -1px;
 }
 
 .hidden-input {

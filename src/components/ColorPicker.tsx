@@ -16,6 +16,7 @@ export const ColorPicker = ({ colorMode, selectedColor, onColorSelect }: ColorPi
           type="button"
           key={color}
           className={`color-swatch ${color} ${selectedColor === color ? "selected" : ""}`}
+          aria-pressed={selectedColor === color}
           onClick={() => onColorSelect(color)}
           aria-label={`Select ${color} color`}
         ></button>
