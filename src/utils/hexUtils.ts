@@ -1,4 +1,4 @@
-import type { Color, ColorMode, ConversionMethod, Size, CompressionFormat } from "../types";
+import type { Color, ColorMode, TileOrder, Size, Compression } from "../types";
 import { compressGen1 } from "./gen1Compressor";
 import { decompressGen1 } from "./gen1Decompressor";
 import { compressGen2 } from "./gen2Compressor";
@@ -61,9 +61,9 @@ const bitsToPixel = (bit1: string, bit2: string): Color => {
 
 export const pixelsToHex = (
   pixels: Color[][],
-  conversionMethod: ConversionMethod,
+  tileOrder: TileOrder,
   colorMode: ColorMode,
-  compressionFormat: CompressionFormat = "none",
+  compression: Compression = "none",
 ): string => {
   const result: string[] = [];
   const width = pixels.length;
@@ -87,8 +87,8 @@ export const pixelsToHex = (
     }
   };
 
-  switch (conversionMethod) {
-    case "leftToRight":
+  switch (tileOrder) {
+    case "rows":
       for (let y_block = 0; y_block < height; y_block += 8) {
         for (let x_block = 0; x_block < width; x_block += 8) {
           convertBlockToHex(x_block, y_block, colorMode);
@@ -96,7 +96,7 @@ export const pixelsToHex = (
       }
       break;
 
-    case "topToBottomLeft":
+    case "columns":
       for (let x_block = 0; x_block < width; x_block += 8) {
         for (let y_block = 0; y_block < height; y_block += 8) {
           convertBlockToHex(x_block, y_block, colorMode);
@@ -104,7 +104,7 @@ export const pixelsToHex = (
       }
       break;
 
-    case "topToBottomRight":
+    case "columnsReversed":
       for (let x_block = width - 8; x_block >= 0; x_block -= 8) {
         for (let y_block = 0; y_block < height; y_block += 8) {
           convertBlockToHex(x_block, y_block, colorMode);
@@ -115,13 +115,13 @@ export const pixelsToHex = (
 
   const hexString = result.join(" ");
 
-  if (compressionFormat === "none") {
+  if (compression === "none") {
     return hexString;
   }
 
   try {
     const bytes = hexToBytes(hexString);
-    return compressionFormat === "gen1"
+    return compression === "gen1"
       ? bytesToHex(compressGen1(bytes))
       : bytesToHex(compressGen2(bytes));
   } catch {
@@ -134,7 +134,7 @@ export const pixelsToHex = (
 export const hexToPixels = (
   hex: string,
   size: Size,
-  conversionMethod: ConversionMethod,
+  tileOrder: TileOrder,
   colorMode: ColorMode,
 ): ValidationResult<Color[][]> => {
   const cleanedHexValue = hex.replace(/\s+/g, "");
@@ -183,8 +183,8 @@ export const hexToPixels = (
     }
   };
 
-  switch (conversionMethod) {
-    case "leftToRight":
+  switch (tileOrder) {
+    case "rows":
       for (let y_block = 0; y_block < size.height; y_block += 8) {
         for (let x_block = 0; x_block < size.width; x_block += 8) {
           convertHexToBlock(x_block, y_block);
@@ -192,7 +192,7 @@ export const hexToPixels = (
       }
       break;
 
-    case "topToBottomLeft":
+    case "columns":
       for (let x_block = 0; x_block < size.width; x_block += 8) {
         for (let y_block = 0; y_block < size.height; y_block += 8) {
           convertHexToBlock(x_block, y_block);
@@ -200,7 +200,7 @@ export const hexToPixels = (
       }
       break;
 
-    case "topToBottomRight":
+    case "columnsReversed":
       for (let x_block = size.width - 8; x_block >= 0; x_block -= 8) {
         for (let y_block = 0; y_block < size.height; y_block += 8) {
           convertHexToBlock(x_block, y_block);
@@ -215,12 +215,12 @@ export const hexToPixels = (
 export const hexToPixelsWithDecompression = (
   hex: string,
   size: Size,
-  conversionMethod: ConversionMethod,
+  tileOrder: TileOrder,
   colorMode: ColorMode,
-  compressionFormat: CompressionFormat,
+  compression: Compression,
 ): DecompressionResult => {
-  if (compressionFormat === "none") {
-    return hexToPixels(hex, size, conversionMethod, colorMode);
+  if (compression === "none") {
+    return hexToPixels(hex, size, tileOrder, colorMode);
   }
 
   try {
@@ -228,7 +228,7 @@ export const hexToPixelsWithDecompression = (
     let detectedSize: Size | undefined;
 
     const compressedBytes = hexToBytes(hex);
-    if (compressionFormat === "gen1") {
+    if (compression === "gen1") {
       // Gen1 stores the sprite size (in tiles) in the first byte's nybbles
       detectedSize = {
         width: ((compressedBytes[0] >> 4) & 0xf) * 8,
@@ -242,7 +242,7 @@ export const hexToPixelsWithDecompression = (
     const result = hexToPixels(
       bytesToHex(decompressedBytes),
       detectedSize ?? size,
-      conversionMethod,
+      tileOrder,
       colorMode,
     );
     return { ...result, detectedSize };

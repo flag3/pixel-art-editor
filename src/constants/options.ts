@@ -1,14 +1,14 @@
-import type { SelectOption, ColorMode, ConversionMethod, CompressionFormat } from "../types";
+import type { SelectOption, ColorMode, TileOrder, Compression } from "../types";
 
 export const colorModeOptions: SelectOption<ColorMode>[] = [
   { value: "fourColors", label: "4" },
   { value: "twoColors", label: "2" },
 ];
 
-export const conversionMethodOptions: SelectOption<ConversionMethod>[] = [
-  { value: "leftToRight", label: "Rows" },
-  { value: "topToBottomLeft", label: "Columns" },
-  { value: "topToBottomRight", label: "Columns, reversed" },
+export const tileOrderOptions: SelectOption<TileOrder>[] = [
+  { value: "rows", label: "Rows" },
+  { value: "columns", label: "Columns" },
+  { value: "columnsReversed", label: "Columns, reversed" },
 ];
 
 export const widthOptions: SelectOption[] = Array.from({ length: 20 }, (_, index) => {
@@ -21,7 +21,7 @@ export const heightOptions: SelectOption[] = Array.from({ length: 18 }, (_, inde
   return { value: value.toString(), label: value.toString() };
 });
 
-export const compressionFormatOptions: SelectOption<CompressionFormat>[] = [
+export const compressionOptions: SelectOption<Compression>[] = [
   { value: "none", label: "None" },
   { value: "gen1", label: "Gen 1" },
   { value: "gen2", label: "Gen 2" },

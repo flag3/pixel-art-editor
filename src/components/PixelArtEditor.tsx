@@ -4,8 +4,8 @@ import { usePixelDownload } from "../hooks/usePixelDownload";
 import type { Color, ColorMode, SelectOption, Size } from "../types";
 import {
   colorModeOptions,
-  conversionMethodOptions,
-  compressionFormatOptions,
+  tileOrderOptions,
+  compressionOptions,
   widthOptions,
   heightOptions,
 } from "../constants/options";
@@ -76,14 +76,14 @@ export default function PixelArtEditor() {
   );
 
   const {
-    conversionMethod,
-    compressionFormat,
+    tileOrder,
+    compression,
     hexValue,
     error,
     setHexValue,
     setError,
-    setConversionMethod,
-    setCompressionFormat,
+    setTileOrder,
+    setCompression,
     handleEncode,
     handleDecode,
   } = useHexConversion({ pixels, gridSize, colorMode, onDecodeSuccess: handleDecodeSuccess });
@@ -174,15 +174,15 @@ export default function PixelArtEditor() {
         <Stack direction="horizontal" gap="normal" wrap="wrap" justify="center" align="end">
           <SelectField
             label="Tile Order"
-            value={conversionMethod}
-            options={conversionMethodOptions}
-            onChange={setConversionMethod}
+            value={tileOrder}
+            options={tileOrderOptions}
+            onChange={setTileOrder}
           />
           <SelectField
             label="Compression"
-            value={compressionFormat}
-            options={compressionFormatOptions}
-            onChange={setCompressionFormat}
+            value={compression}
+            options={compressionOptions}
+            onChange={setCompression}
           />
           <ButtonGroup>
             <IconButton icon={EncodeIcon} aria-label="Encode to hex" onClick={handleEncode} />

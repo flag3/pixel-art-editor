@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import type { Color, ColorMode, ConversionMethod, CompressionFormat, Size } from "../types";
+import type { Color, ColorMode, TileOrder, Compression, Size } from "../types";
 import { pixelsToHex, hexToPixelsWithDecompression } from "../utils/hexUtils";
 
 interface UseHexConversionProps {
@@ -10,14 +10,14 @@ interface UseHexConversionProps {
 }
 
 export interface HexConversionState {
-  conversionMethod: ConversionMethod;
-  compressionFormat: CompressionFormat;
+  tileOrder: TileOrder;
+  compression: Compression;
   hexValue: string;
   error: string | null;
   setHexValue: (value: string) => void;
   setError: (error: string | null) => void;
-  setConversionMethod: (method: ConversionMethod) => void;
-  setCompressionFormat: (format: CompressionFormat) => void;
+  setTileOrder: (tileOrder: TileOrder) => void;
+  setCompression: (compression: Compression) => void;
   handleEncode: () => void;
   handleDecode: () => void;
 }
@@ -28,22 +28,22 @@ export const useHexConversion = ({
   colorMode,
   onDecodeSuccess,
 }: UseHexConversionProps): HexConversionState => {
-  const [conversionMethod, setConversionMethod] = useState<ConversionMethod>("leftToRight");
-  const [compressionFormat, setCompressionFormat] = useState<CompressionFormat>("none");
+  const [tileOrder, setTileOrder] = useState<TileOrder>("rows");
+  const [compression, setCompression] = useState<Compression>("none");
   const [hexValue, setHexValue] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const handleEncode = useCallback(() => {
-    setHexValue(pixelsToHex(pixels, conversionMethod, colorMode, compressionFormat));
-  }, [pixels, conversionMethod, colorMode, compressionFormat]);
+    setHexValue(pixelsToHex(pixels, tileOrder, colorMode, compression));
+  }, [pixels, tileOrder, colorMode, compression]);
 
   const handleDecode = useCallback(() => {
     const result = hexToPixelsWithDecompression(
       hexValue,
       gridSize,
-      conversionMethod,
+      tileOrder,
       colorMode,
-      compressionFormat,
+      compression,
     );
     if (result.success && result.data) {
       onDecodeSuccess(result.data, result.detectedSize);
@@ -51,17 +51,17 @@ export const useHexConversion = ({
     } else {
       setError(result.error ?? "Decode failed");
     }
-  }, [hexValue, gridSize, conversionMethod, colorMode, compressionFormat, onDecodeSuccess]);
+  }, [hexValue, gridSize, tileOrder, colorMode, compression, onDecodeSuccess]);
 
   return {
-    conversionMethod,
-    compressionFormat,
+    tileOrder,
+    compression,
     hexValue,
     error,
     setHexValue,
     setError,
-    setConversionMethod,
-    setCompressionFormat,
+    setTileOrder,
+    setCompression,
     handleEncode,
     handleDecode,
   };
