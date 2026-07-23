@@ -1,16 +1,16 @@
 import { useRef } from "react";
-import type { Color, ColorMode, Size } from "../types";
+import type { Color, ColorCount, Size } from "../types";
 import { getClosestColor } from "../utils/colorUtils";
 
 interface UseFileUploadProps {
-  colorMode: ColorMode;
+  colorCount: ColorCount;
   gridSize: Size;
   applyChange: (newPixels: Color[][]) => void;
   onError: (message: string) => void;
 }
 
 export const useFileUpload = ({
-  colorMode,
+  colorCount,
   gridSize,
   applyChange,
   onError,
@@ -46,7 +46,7 @@ export const useFileUpload = ({
       const newPixels: Color[][] = Array.from({ length: gridSize.width }, (_, x) =>
         Array.from({ length: gridSize.height }, (_, y) => {
           const offset = (y * gridSize.width + x) * 4;
-          return getClosestColor(data[offset], data[offset + 1], data[offset + 2], colorMode);
+          return getClosestColor(data[offset], data[offset + 1], data[offset + 2], colorCount);
         }),
       );
 

@@ -1,14 +1,14 @@
-import type { Color, ColorMode } from "../types";
-import { colorsByMode } from "../utils/colorUtils";
+import type { Color, ColorCount } from "../types";
+import { colorsByCount } from "../utils/colorUtils";
 
 interface ColorPickerProps {
-  colorMode: ColorMode;
+  colorCount: ColorCount;
   selectedColor: Color;
   onColorSelect: (color: Color) => void;
 }
 
-export const ColorPicker = ({ colorMode, selectedColor, onColorSelect }: ColorPickerProps) => {
-  const availableColors = colorsByMode[colorMode];
+export const ColorPicker = ({ colorCount, selectedColor, onColorSelect }: ColorPickerProps) => {
+  const availableColors = colorsByCount[colorCount];
   return (
     <div className="color-picker">
       {availableColors.map((color) => (

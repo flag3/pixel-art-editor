@@ -1,9 +1,9 @@
 import { usePixelState } from "../hooks/usePixelState";
 import { useHexConversion } from "../hooks/useHexConversion";
 import { usePixelDownload } from "../hooks/usePixelDownload";
-import type { Color, ColorMode, SelectOption, Size } from "../types";
+import type { Color, ColorCount, SelectOption, Size } from "../types";
 import {
-  colorModeOptions,
+  colorCountOptions,
   tileOrderOptions,
   compressionOptions,
   widthOptions,
@@ -60,7 +60,7 @@ const SelectField = <T extends string>({
 );
 
 export default function PixelArtEditor() {
-  const [colorMode, setColorMode] = useState<ColorMode>("fourColors");
+  const [colorCount, setColorCount] = useState<ColorCount>(4);
   const [gridSize, setGridSize] = useState<Size>({ width: 16, height: 16 });
   const [selectedColor, setSelectedColor] = useState<Color>("white");
   const { pixels, applyChange, undo, redo, canUndo, canRedo } = usePixelState(gridSize);
@@ -86,7 +86,7 @@ export default function PixelArtEditor() {
     setCompression,
     handleEncode,
     handleDecode,
-  } = useHexConversion({ pixels, gridSize, colorMode, onDecodeSuccess: handleDecodeSuccess });
+  } = useHexConversion({ pixels, gridSize, colorCount, onDecodeSuccess: handleDecodeSuccess });
 
   const { handleFileDownload } = usePixelDownload(pixels);
 
@@ -94,7 +94,7 @@ export default function PixelArtEditor() {
     inputRef,
     handleClick: handleUploadClick,
     handleChange: handleUploadChange,
-  } = useFileUpload({ colorMode, gridSize, applyChange, onError: setError });
+  } = useFileUpload({ colorCount, gridSize, applyChange, onError: setError });
 
   const handleGridSizeChange = useCallback(
     (dimension: "width" | "height", value: number) => {
@@ -123,9 +123,9 @@ export default function PixelArtEditor() {
       <Stack direction="horizontal" gap="normal" wrap="wrap" justify="center">
         <SelectField
           label="Colors"
-          value={colorMode}
-          options={colorModeOptions}
-          onChange={setColorMode}
+          value={colorCount.toString()}
+          options={colorCountOptions}
+          onChange={(value) => setColorCount(Number(value) as ColorCount)}
         />
         <SelectField
           label="Width"
@@ -142,7 +142,7 @@ export default function PixelArtEditor() {
       </Stack>
       <Stack direction="vertical" gap="normal" align="center">
         <ColorPicker
-          colorMode={colorMode}
+          colorCount={colorCount}
           selectedColor={selectedColor}
           onColorSelect={setSelectedColor}
         />
@@ -197,7 +197,7 @@ export default function PixelArtEditor() {
             className="hex-textarea"
             value={hexValue}
             onChange={(e) => setHexValue(e.target.value)}
-            rows={colorMode === "fourColors" ? gridSize.height / 4 : gridSize.height / 8}
+            rows={colorCount === 4 ? gridSize.height / 4 : gridSize.height / 8}
             resize="vertical"
           />
         </FormControl>

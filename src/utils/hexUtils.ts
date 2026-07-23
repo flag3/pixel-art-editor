@@ -1,4 +1,4 @@
-import type { Color, ColorMode, TileOrder, Size, Compression } from "../types";
+import type { Color, ColorCount, TileOrder, Size, Compression } from "../types";
 import { compressGen1 } from "./gen1Compressor";
 import { decompressGen1 } from "./gen1Decompressor";
 import { compressGen2 } from "./gen2Compressor";
@@ -62,14 +62,14 @@ const bitsToPixel = (bit1: string, bit2: string): Color => {
 export const pixelsToHex = (
   pixels: Color[][],
   tileOrder: TileOrder,
-  colorMode: ColorMode,
+  colorCount: ColorCount,
   compression: Compression = "none",
 ): string => {
   const result: string[] = [];
   const width = pixels.length;
   const height = pixels[0].length;
 
-  const convertBlockToHex = (x_start: number, y_start: number, colorMode: ColorMode) => {
+  const convertBlockToHex = (x_start: number, y_start: number, colorCount: ColorCount) => {
     for (let y = y_start; y < y_start + 8; y++) {
       let bin1 = "";
       let bin2 = "";
@@ -78,7 +78,7 @@ export const pixelsToHex = (
         bin1 += bit1;
         bin2 += bit2;
       }
-      if (colorMode == "fourColors") {
+      if (colorCount == 4) {
         result.push(parseInt(bin1, 2).toString(16).padStart(2, "0").toUpperCase());
         result.push(parseInt(bin2, 2).toString(16).padStart(2, "0").toUpperCase());
       } else {
@@ -91,7 +91,7 @@ export const pixelsToHex = (
     case "rows":
       for (let y_block = 0; y_block < height; y_block += 8) {
         for (let x_block = 0; x_block < width; x_block += 8) {
-          convertBlockToHex(x_block, y_block, colorMode);
+          convertBlockToHex(x_block, y_block, colorCount);
         }
       }
       break;
@@ -99,7 +99,7 @@ export const pixelsToHex = (
     case "columns":
       for (let x_block = 0; x_block < width; x_block += 8) {
         for (let y_block = 0; y_block < height; y_block += 8) {
-          convertBlockToHex(x_block, y_block, colorMode);
+          convertBlockToHex(x_block, y_block, colorCount);
         }
       }
       break;
@@ -107,7 +107,7 @@ export const pixelsToHex = (
     case "columnsReversed":
       for (let x_block = width - 8; x_block >= 0; x_block -= 8) {
         for (let y_block = 0; y_block < height; y_block += 8) {
-          convertBlockToHex(x_block, y_block, colorMode);
+          convertBlockToHex(x_block, y_block, colorCount);
         }
       }
       break;
@@ -135,7 +135,7 @@ export const hexToPixels = (
   hex: string,
   size: Size,
   tileOrder: TileOrder,
-  colorMode: ColorMode,
+  colorCount: ColorCount,
 ): ValidationResult<Color[][]> => {
   const cleanedHexValue = hex.replace(/\s+/g, "");
   if (/[^a-fA-F0-9]/.test(cleanedHexValue)) {
@@ -150,7 +150,7 @@ export const hexToPixels = (
     hexArray.push(cleanedHexValue.substring(i, i + 2));
   }
 
-  if (colorMode === "twoColors") {
+  if (colorCount === 2) {
     hexArray = hexArray.flatMap((n) => [n, n]);
   }
 
@@ -216,11 +216,11 @@ export const hexToPixelsWithDecompression = (
   hex: string,
   size: Size,
   tileOrder: TileOrder,
-  colorMode: ColorMode,
+  colorCount: ColorCount,
   compression: Compression,
 ): DecompressionResult => {
   if (compression === "none") {
-    return hexToPixels(hex, size, tileOrder, colorMode);
+    return hexToPixels(hex, size, tileOrder, colorCount);
   }
 
   try {
@@ -243,7 +243,7 @@ export const hexToPixelsWithDecompression = (
       bytesToHex(decompressedBytes),
       detectedSize ?? size,
       tileOrder,
-      colorMode,
+      colorCount,
     );
     return { ...result, detectedSize };
   } catch (error) {

@@ -1,16 +1,16 @@
-import type { Color, ColorMode } from "./../types";
+import type { Color, ColorCount } from "./../types";
 
-export const colorsByMode: Record<ColorMode, Color[]> = {
-  twoColors: ["white", "black"],
-  fourColors: ["white", "lightgray", "darkgray", "black"],
+export const colorsByCount: Record<ColorCount, Color[]> = {
+  2: ["white", "black"],
+  4: ["white", "lightgray", "darkgray", "black"],
 };
 
-export const getClosestColor = (r: number, g: number, b: number, colorMode: ColorMode): Color => {
+export const getClosestColor = (r: number, g: number, b: number, colorCount: ColorCount): Color => {
   const computedStyle = getComputedStyle(document.documentElement);
   let minDistance = Infinity;
   let closestColor: Color = "white";
 
-  for (const color of colorsByMode[colorMode]) {
+  for (const color of colorsByCount[colorCount]) {
     const cssRGB = computedStyle.getPropertyValue(`--${color}`).trim();
     const match = cssRGB.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
     if (match) {

@@ -1,11 +1,11 @@
 import { useState, useCallback } from "react";
-import type { Color, ColorMode, TileOrder, Compression, Size } from "../types";
+import type { Color, ColorCount, TileOrder, Compression, Size } from "../types";
 import { pixelsToHex, hexToPixelsWithDecompression } from "../utils/hexUtils";
 
 interface UseHexConversionProps {
   pixels: Color[][];
   gridSize: Size;
-  colorMode: ColorMode;
+  colorCount: ColorCount;
   onDecodeSuccess: (pixels: Color[][], detectedSize?: Size) => void;
 }
 
@@ -25,7 +25,7 @@ export interface HexConversionState {
 export const useHexConversion = ({
   pixels,
   gridSize,
-  colorMode,
+  colorCount,
   onDecodeSuccess,
 }: UseHexConversionProps): HexConversionState => {
   const [tileOrder, setTileOrder] = useState<TileOrder>("rows");
@@ -34,15 +34,15 @@ export const useHexConversion = ({
   const [error, setError] = useState<string | null>(null);
 
   const handleEncode = useCallback(() => {
-    setHexValue(pixelsToHex(pixels, tileOrder, colorMode, compression));
-  }, [pixels, tileOrder, colorMode, compression]);
+    setHexValue(pixelsToHex(pixels, tileOrder, colorCount, compression));
+  }, [pixels, tileOrder, colorCount, compression]);
 
   const handleDecode = useCallback(() => {
     const result = hexToPixelsWithDecompression(
       hexValue,
       gridSize,
       tileOrder,
-      colorMode,
+      colorCount,
       compression,
     );
     if (result.success && result.data) {
@@ -51,7 +51,7 @@ export const useHexConversion = ({
     } else {
       setError(result.error ?? "Decode failed");
     }
-  }, [hexValue, gridSize, tileOrder, colorMode, compression, onDecodeSuccess]);
+  }, [hexValue, gridSize, tileOrder, colorCount, compression, onDecodeSuccess]);
 
   return {
     tileOrder,

@@ -1,8 +1,8 @@
-import type { SelectOption, ColorMode, TileOrder, Compression } from "../types";
+import type { SelectOption, TileOrder, Compression } from "../types";
 
-export const colorModeOptions: SelectOption<ColorMode>[] = [
-  { value: "fourColors", label: "4" },
-  { value: "twoColors", label: "2" },
+export const colorCountOptions: SelectOption[] = [
+  { value: "4", label: "4" },
+  { value: "2", label: "2" },
 ];
 
 export const tileOrderOptions: SelectOption<TileOrder>[] = [
