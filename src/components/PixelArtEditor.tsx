@@ -26,13 +26,13 @@ import {
 } from "@primer/react";
 import { useState, useCallback } from "react";
 
-const UploadIcon = () => <Icon icon="material-symbols:upload" width={16} height={16} />;
-const UndoIcon = () => <Icon icon="material-symbols:undo" width={16} height={16} />;
-const RedoIcon = () => <Icon icon="material-symbols:redo" width={16} height={16} />;
-const ClearIcon = () => <Icon icon="material-symbols:delete-outline" width={16} height={16} />;
-const DownloadIcon = () => <Icon icon="material-symbols:download" width={16} height={16} />;
-const EncodeIcon = () => <Icon icon="material-symbols:arrow-downward" width={16} height={16} />;
-const DecodeIcon = () => <Icon icon="material-symbols:arrow-upward" width={16} height={16} />;
+const UploadIcon = () => <Icon icon="material-symbols:upload" />;
+const UndoIcon = () => <Icon icon="material-symbols:undo" />;
+const RedoIcon = () => <Icon icon="material-symbols:redo" />;
+const ClearIcon = () => <Icon icon="material-symbols:delete-outline" />;
+const DownloadIcon = () => <Icon icon="material-symbols:download" />;
+const EncodeIcon = () => <Icon icon="material-symbols:arrow-downward" />;
+const DecodeIcon = () => <Icon icon="material-symbols:arrow-upward" />;
 
 interface SelectFieldProps<T extends string> {
   label: string;
