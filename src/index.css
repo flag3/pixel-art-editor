@@ -1,14 +1,30 @@
+:root {
+  --white: rgb(255, 255, 255);
+  --lightgray: rgb(170, 170, 170);
+  --darkgray: rgb(85, 85, 85);
+  --black: rgb(0, 0, 0);
+}
+
 body {
-  margin: 0;
   display: flex;
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
-  background-color: var(--bgColor-default, #fff);
-  color: var(--fgColor-default, #1f2328);
+  background-color: var(--bgColor-default);
 }
 
-#root {
-  margin: 0 auto;
-  padding: 2rem;
+.white {
+  background-color: var(--white);
+}
+
+.lightgray {
+  background-color: var(--lightgray);
+}
+
+.darkgray {
+  background-color: var(--darkgray);
+}
+
+.black {
+  background-color: var(--black);
 }

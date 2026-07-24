@@ -1,3 +1,8 @@
+#root {
+  margin: 0 auto;
+  padding: 2rem;
+}
+
 .grid-viewport {
   width: max-content;
   max-width: 100%;
@@ -7,8 +12,6 @@
 
 .grid {
   transform-origin: 0 0;
-  /* Shrink cells so the whole grid always fits the viewport — no scrolling,
-     because scroll and touch drawing conflict on mobile */
   --pixel-size: clamp(
     2px,
     min(calc((100vw - 4rem) / var(--grid-cols, 16)), calc(70vh / var(--grid-rows, 16))),
@@ -17,6 +20,8 @@
   display: flex;
   flex-direction: column;
   width: max-content;
+  border-top: var(--borderWidth-thin, 1px) solid var(--borderColor-default, #d1d9e0);
+  border-left: var(--borderWidth-thin, 1px) solid var(--borderColor-default, #d1d9e0);
 }
 
 .row {
@@ -25,36 +30,28 @@
 
 .pixel {
   box-sizing: border-box;
+  position: relative;
   flex-shrink: 0;
   width: var(--pixel-size);
   height: var(--pixel-size);
   padding: 0;
-  border: 1px solid var(--borderColor-default, #ddd);
+  border: 0;
+  border-right: var(--borderWidth-thin, 1px) solid var(--borderColor-default, #d1d9e0);
+  border-bottom: var(--borderWidth-thin, 1px) solid var(--borderColor-default, #d1d9e0);
   border-radius: 0;
   cursor: pointer;
 }
 
-:root {
-  --white: rgb(255, 255, 255);
-  --lightgray: rgb(170, 170, 170);
-  --darkgray: rgb(85, 85, 85);
-  --black: rgb(0, 0, 0);
+.pixel:focus-visible {
+  outline: none;
 }
 
-.white {
-  background-color: var(--white);
-}
-
-.lightgray {
-  background-color: var(--lightgray);
-}
-
-.darkgray {
-  background-color: var(--darkgray);
-}
-
-.black {
-  background-color: var(--black);
+.pixel:focus-visible::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border: var(--borderWidth-thick, 2px) solid var(--focus-outlineColor, #0969da);
+  pointer-events: none;
 }
 
 .color-picker {
