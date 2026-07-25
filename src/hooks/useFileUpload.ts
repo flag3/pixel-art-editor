@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import type { Color, ColorCount, Size } from "../types";
-import { getClosestColor } from "../utils/colorUtils";
+import { createColorMatcher } from "../utils/colorUtils";
 
 interface UseFileUploadProps {
   colorCount: ColorCount;
@@ -43,10 +43,11 @@ export const useFileUpload = ({
       ctx.drawImage(img, 0, 0, gridSize.width, gridSize.height);
 
       const { data } = ctx.getImageData(0, 0, gridSize.width, gridSize.height);
+      const toClosestColor = createColorMatcher(colorCount);
       const newPixels: Color[][] = Array.from({ length: gridSize.width }, (_, x) =>
         Array.from({ length: gridSize.height }, (_, y) => {
           const offset = (y * gridSize.width + x) * 4;
-          return getClosestColor(data[offset], data[offset + 1], data[offset + 2], colorCount);
+          return toClosestColor(data[offset], data[offset + 1], data[offset + 2]);
         }),
       );
 

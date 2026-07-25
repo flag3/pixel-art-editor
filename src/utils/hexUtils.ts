@@ -59,6 +59,29 @@ const bitsToPixel = (bit1: string, bit2: string): Color => {
   return color;
 };
 
+const forEachTile = (
+  size: Size,
+  tileOrder: TileOrder,
+  visit: (xStart: number, yStart: number) => void,
+): void => {
+  if (tileOrder === "rows") {
+    for (let y = 0; y < size.height; y += 8) {
+      for (let x = 0; x < size.width; x += 8) {
+        visit(x, y);
+      }
+    }
+    return;
+  }
+
+  const reversed = tileOrder === "columnsReversed";
+  const step = reversed ? -8 : 8;
+  for (let x = reversed ? size.width - 8 : 0; x >= 0 && x < size.width; x += step) {
+    for (let y = 0; y < size.height; y += 8) {
+      visit(x, y);
+    }
+  }
+};
+
 export const pixelsToHex = (
   pixels: Color[][],
   tileOrder: TileOrder,
@@ -69,7 +92,7 @@ export const pixelsToHex = (
   const width = pixels.length;
   const height = pixels[0].length;
 
-  const convertBlockToHex = (x_start: number, y_start: number, colorCount: ColorCount) => {
+  const convertBlockToHex = (x_start: number, y_start: number) => {
     for (let y = y_start; y < y_start + 8; y++) {
       let bin1 = "";
       let bin2 = "";
@@ -87,31 +110,7 @@ export const pixelsToHex = (
     }
   };
 
-  switch (tileOrder) {
-    case "rows":
-      for (let y_block = 0; y_block < height; y_block += 8) {
-        for (let x_block = 0; x_block < width; x_block += 8) {
-          convertBlockToHex(x_block, y_block, colorCount);
-        }
-      }
-      break;
-
-    case "columns":
-      for (let x_block = 0; x_block < width; x_block += 8) {
-        for (let y_block = 0; y_block < height; y_block += 8) {
-          convertBlockToHex(x_block, y_block, colorCount);
-        }
-      }
-      break;
-
-    case "columnsReversed":
-      for (let x_block = width - 8; x_block >= 0; x_block -= 8) {
-        for (let y_block = 0; y_block < height; y_block += 8) {
-          convertBlockToHex(x_block, y_block, colorCount);
-        }
-      }
-      break;
-  }
+  forEachTile({ width, height }, tileOrder, convertBlockToHex);
 
   const hexString = result.join(" ");
 
@@ -183,31 +182,7 @@ export const hexToPixels = (
     }
   };
 
-  switch (tileOrder) {
-    case "rows":
-      for (let y_block = 0; y_block < size.height; y_block += 8) {
-        for (let x_block = 0; x_block < size.width; x_block += 8) {
-          convertHexToBlock(x_block, y_block);
-        }
-      }
-      break;
-
-    case "columns":
-      for (let x_block = 0; x_block < size.width; x_block += 8) {
-        for (let y_block = 0; y_block < size.height; y_block += 8) {
-          convertHexToBlock(x_block, y_block);
-        }
-      }
-      break;
-
-    case "columnsReversed":
-      for (let x_block = size.width - 8; x_block >= 0; x_block -= 8) {
-        for (let y_block = 0; y_block < size.height; y_block += 8) {
-          convertHexToBlock(x_block, y_block);
-        }
-      }
-      break;
-  }
+  forEachTile(size, tileOrder, convertHexToBlock);
 
   return { success: true, data: pixels };
 };

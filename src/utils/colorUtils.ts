@@ -5,29 +5,34 @@ export const colorsByCount: Record<ColorCount, Color[]> = {
   4: ["white", "lightgray", "darkgray", "black"],
 };
 
-export const getClosestColor = (r: number, g: number, b: number, colorCount: ColorCount): Color => {
+export const readColorStyles = (): Record<Color, string> => {
   const computedStyle = getComputedStyle(document.documentElement);
-  let minDistance = Infinity;
-  let closestColor: Color = "white";
+  return Object.fromEntries(
+    colorsByCount[4].map((color) => [color, computedStyle.getPropertyValue(`--${color}`).trim()]),
+  ) as Record<Color, string>;
+};
 
-  for (const color of colorsByCount[colorCount]) {
-    const cssRGB = computedStyle.getPropertyValue(`--${color}`).trim();
-    const match = cssRGB.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-    if (match) {
-      const colorR = parseInt(match[1]);
-      const colorG = parseInt(match[2]);
-      const colorB = parseInt(match[3]);
+export const createColorMatcher = (
+  colorCount: ColorCount,
+): ((r: number, g: number, b: number) => Color) => {
+  const styles = readColorStyles();
+  const palette = colorsByCount[colorCount].flatMap((color) => {
+    const match = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/.exec(styles[color]);
+    return match ? [{ color, r: Number(match[1]), g: Number(match[2]), b: Number(match[3]) }] : [];
+  });
 
-      const distance = Math.sqrt(
-        Math.pow(colorR - r, 2) + Math.pow(colorG - g, 2) + Math.pow(colorB - b, 2),
-      );
+  return (r, g, b) => {
+    let closestColor: Color = "white";
+    let minDistance = Infinity;
 
+    for (const entry of palette) {
+      const distance = (entry.r - r) ** 2 + (entry.g - g) ** 2 + (entry.b - b) ** 2;
       if (distance < minDistance) {
         minDistance = distance;
-        closestColor = color;
+        closestColor = entry.color;
       }
     }
-  }
 
-  return closestColor;
+    return closestColor;
+  };
 };

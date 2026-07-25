@@ -11,15 +11,14 @@ export const tileOrderOptions: SelectOption<TileOrder>[] = [
   { value: "columnsReversed", label: "Columns, reversed" },
 ];
 
-export const widthOptions: SelectOption[] = Array.from({ length: 20 }, (_, index) => {
-  const value = (index + 1) * 8;
-  return { value: value.toString(), label: value.toString() };
-});
+const tileSizeOptions = (count: number): SelectOption[] =>
+  Array.from({ length: count }, (_, index) => {
+    const value = ((index + 1) * 8).toString();
+    return { value, label: value };
+  });
 
-export const heightOptions: SelectOption[] = Array.from({ length: 18 }, (_, index) => {
-  const value = (index + 1) * 8;
-  return { value: value.toString(), label: value.toString() };
-});
+export const widthOptions = tileSizeOptions(20);
+export const heightOptions = tileSizeOptions(18);
 
 export const compressionOptions: SelectOption<Compression>[] = [
   { value: "none", label: "None" },

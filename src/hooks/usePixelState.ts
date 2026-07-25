@@ -11,6 +11,11 @@ export interface PixelState {
   canRedo: boolean;
 }
 
+const isSamePixels = (a: Color[][], b: Color[][]): boolean =>
+  a.length === b.length &&
+  a[0]?.length === b[0]?.length &&
+  a.every((column, x) => column.every((color, y) => color === b[x][y]));
+
 export const usePixelState = (initialSize: Size): PixelState => {
   const [pixels, setPixels] = useState(() => createInitialPixels(initialSize));
   const [undoStack, setUndoStack] = useState<Color[][][]>([]);
@@ -18,8 +23,7 @@ export const usePixelState = (initialSize: Size): PixelState => {
 
   const applyChange = useCallback(
     (newPixels: Color[][]) => {
-      const isSameAsPrevious = JSON.stringify(pixels) === JSON.stringify(newPixels);
-      if (isSameAsPrevious) return;
+      if (isSamePixels(pixels, newPixels)) return;
 
       setRedoStack([]);
       setUndoStack((prevStack) => [...prevStack, pixels]);

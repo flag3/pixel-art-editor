@@ -23,7 +23,7 @@ const BIT_FLIPPING_TABLE = new Uint8Array([
 ]);
 
 interface Command {
-  command: number; // 0-6
+  command: number; // 0-6, or 7 for a dummy (no candidate / removed by optimize)
   count: number; // 1-1024
   value: number; // offset or bytes
 }
@@ -45,99 +45,34 @@ export function compressGen2(data: Uint8Array, options: CompressionOptions = {})
     bitflipped[i] = BIT_FLIPPING_TABLE[data[i]];
   }
 
-  // Use method 0 for debugging and simplicity
-  const bestCommands = tryCompressSinglePass(data, bitflipped, 0);
-
-  // Convert commands to binary output
-  return writeCommandsToBytes(bestCommands, data, alignment);
+  return writeCommandsToBytes(buildCommands(data, bitflipped), data, alignment);
 }
 
-function tryCompressSinglePass(data: Uint8Array, bitflipped: Uint8Array, flags: number): Command[] {
-  const commands: Command[] = Array.from({ length: data.length });
-
-  // Initialize all commands as dummy (command 7)
-  for (let i = 0; i < commands.length; i++) {
-    commands[i] = { command: 7, count: 0, value: 0 };
-  }
-
-  let currentCommandIndex = 0;
+function buildCommands(data: Uint8Array, bitflipped: Uint8Array): Command[] {
+  const commands: Command[] = [];
   let position = 0;
-  let previousData = 0;
-  let scanDelay = 0;
-  const scanDelayFlag = Math.floor((flags >> 3) % 3);
 
   while (position < data.length) {
-    const copy = findBestCopy(data, position, data.length, bitflipped, flags);
+    const copy = findBestCopy(data, position, data.length, bitflipped);
     const repetition = findBestRepetition(data, position, data.length);
+    const literal: Command = { command: 0, count: 1, value: position };
 
-    // Pick best command between copy and repetition based on flag 1
-    let bestCommand: Command;
-    if (flags & 1) {
-      bestCommand = pickBestCommand(repetition, copy);
-    } else {
-      bestCommand = pickBestCommand(copy, repetition);
-    }
-
-    // Compare with literal command
-    const literalCommand: Command = { command: 0, count: 1, value: position };
-    bestCommand = pickBestCommand(literalCommand, bestCommand);
-
-    // Flag 2: Don't emit copy/repetition equal to size when previous is non-max literal
-    if (flags & 2 && commandSize(bestCommand) === bestCommand.count) {
-      if (
-        previousData &&
-        previousData !== SHORT_COMMAND_COUNT &&
-        previousData !== MAX_COMMAND_COUNT
-      ) {
-        bestCommand = { command: 0, count: 1, value: position };
-      }
-    }
-
-    // Scan delay logic: force literal commands after non-literal commands
-    if (scanDelayFlag) {
-      if (scanDelay >= scanDelayFlag) {
-        scanDelay = 0;
-      } else if (bestCommand.command) {
-        scanDelay++;
-        bestCommand = { command: 0, count: 1, value: position };
-      }
-    }
-
-    commands[currentCommandIndex] = bestCommand;
-
-    if (bestCommand.command) {
-      previousData = 0;
-    } else {
-      previousData += bestCommand.count;
-    }
-
-    position += bestCommand.count;
-    currentCommandIndex++;
-
-    // Safety check to prevent infinite loops
-    if (currentCommandIndex >= commands.length) {
-      break;
-    }
+    const best = pickBestCommand(literal, pickBestCommand(copy, repetition));
+    commands.push(best);
+    position += best.count;
   }
 
-  // Trim to actual command count
-  const actualCommands = commands.slice(0, currentCommandIndex);
+  optimize(commands);
+  repack(commands);
 
-  // Optimize and repack commands
-  optimize(actualCommands);
-  repack(actualCommands);
-
-  return actualCommands;
+  return commands;
 }
-
-// Removed wouldBeCompressible function as it's not used in this implementation
 
 function findBestCopy(
   data: Uint8Array,
   position: number,
   length: number,
   bitflipped: Uint8Array,
-  flags: number,
 ): Command {
   let simple: Command = { command: 7, count: 0, value: 0 }; // dummy
   let flipped: Command = { command: 7, count: 0, value: 0 };
@@ -173,28 +108,7 @@ function findBestCopy(
     };
   }
 
-  // Pick best based on flags (copy command preference)
-  let command: Command;
-  switch (Math.floor(flags / 24)) {
-    case 0:
-      command = pickBestCommand(simple, backwards, flipped);
-      break;
-    case 1:
-      command = pickBestCommand(backwards, flipped, simple);
-      break;
-    case 2:
-      command = pickBestCommand(flipped, backwards, simple);
-      break;
-    default:
-      command = simple;
-  }
-
-  // Flag 4: Don't emit long copy commands
-  if (flags & 4 && command.count > SHORT_COMMAND_COUNT) {
-    command.count = SHORT_COMMAND_COUNT;
-  }
-
-  return command;
+  return pickBestCommand(simple, backwards, flipped);
 }
 
 function scanForwards(
@@ -345,11 +259,6 @@ function commandSize(command: Command): number {
 }
 
 function optimize(commands: Command[]): void {
-  // Remove leading dummy commands
-  while (commands.length && commands[0].command === 7) {
-    commands.shift();
-  }
-
   if (commands.length < 2) return;
 
   let current = 0;
