@@ -190,15 +190,14 @@ export default function PixelArtEditor() {
           </ButtonGroup>
         </Stack>
         {error && <Flash variant="danger">{error}</Flash>}
-        <FormControl className="hex-form">
+        <FormControl>
           <FormControl.Label>Hex Data</FormControl.Label>
           <Textarea
-            block
             className="hex-textarea"
             value={hexValue}
             onChange={(e) => setHexValue(e.target.value)}
             rows={colorCount === 4 ? gridSize.height / 4 : gridSize.height / 8}
-            resize="vertical"
+            resize="both"
           />
         </FormControl>
       </Stack>

@@ -88,6 +88,6 @@
   font-family: var(--fontStack-monospace, monospace);
 }
 
-.hex-form {
-  width: min(640px, calc(100vw - 4rem));
+.hex-textarea > textarea {
+  width: min(608px, calc(100vw - 6rem));
 }
