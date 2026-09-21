@@ -20,11 +20,12 @@ import {
   Flash,
   FormControl,
   IconButton,
+  SegmentedControl,
   Select,
   Stack,
   Textarea,
 } from "@primer/react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useId } from "react";
 
 const UploadIcon = () => <Icon icon="material-symbols:upload" />;
 const UndoIcon = () => <Icon icon="material-symbols:undo" />;
@@ -60,6 +61,7 @@ const SelectField = <T extends string>({
 );
 
 export default function PixelArtEditor() {
+  const colorsLabelId = useId();
   const [colorCount, setColorCount] = useState<ColorCount>(4);
   const [gridSize, setGridSize] = useState<Size>({ width: 16, height: 16 });
   const [selectedColor, setSelectedColor] = useState<Color>("white");
@@ -121,12 +123,26 @@ export default function PixelArtEditor() {
   return (
     <Stack direction="vertical" gap="spacious" align="center">
       <Stack direction="horizontal" gap="normal" wrap="wrap" justify="center">
-        <SelectField
-          label="Colors"
-          value={colorCount.toString()}
-          options={colorCountOptions}
-          onChange={(value) => setColorCount(Number(value) as ColorCount)}
-        />
+        <FormControl>
+          <FormControl.Label as="span" id={colorsLabelId}>
+            Colors
+          </FormControl.Label>
+          <SegmentedControl
+            aria-labelledby={colorsLabelId}
+            onChange={(index) =>
+              setColorCount(Number(colorCountOptions[index].value) as ColorCount)
+            }
+          >
+            {colorCountOptions.map((option) => (
+              <SegmentedControl.Button
+                key={option.value}
+                selected={colorCount.toString() === option.value}
+              >
+                {option.label}
+              </SegmentedControl.Button>
+            ))}
+          </SegmentedControl>
+        </FormControl>
         <SelectField
           label="Width"
           value={gridSize.width.toString()}

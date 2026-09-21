@@ -54,11 +54,6 @@
   pointer-events: none;
 }
 
-.color-picker {
-  display: flex;
-  gap: 16px;
-}
-
 .color-swatch {
   box-sizing: border-box;
   width: 40px;

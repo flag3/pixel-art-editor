@@ -1,3 +1,4 @@
+import { Stack } from "@primer/react";
 import type { Color, ColorCount } from "../types";
 import { colorsByCount } from "../utils/colorUtils";
 
@@ -10,7 +11,7 @@ interface ColorPickerProps {
 export const ColorPicker = ({ colorCount, selectedColor, onColorSelect }: ColorPickerProps) => {
   const availableColors = colorsByCount[colorCount];
   return (
-    <div className="color-picker">
+    <Stack direction="horizontal">
       {availableColors.map((color) => (
         <button
           type="button"
@@ -21,6 +22,6 @@ export const ColorPicker = ({ colorCount, selectedColor, onColorSelect }: ColorP
           aria-label={`Select ${color} color`}
         ></button>
       ))}
-    </div>
+    </Stack>
   );
 };
