@@ -63,19 +63,12 @@ const SelectField = <T extends string>({
 export default function PixelArtEditor() {
   const colorsLabelId = useId();
   const [colorCount, setColorCount] = useState<ColorCount>(4);
-  const [gridSize, setGridSize] = useState<Size>({ width: 16, height: 16 });
   const [selectedColor, setSelectedColor] = useState<Color>("white");
-  const { pixels, applyChange, undo, redo, canUndo, canRedo } = usePixelState(gridSize);
-
-  const handleDecodeSuccess = useCallback(
-    (newPixels: Color[][], detectedSize?: Size) => {
-      applyChange(newPixels);
-      if (detectedSize) {
-        setGridSize(detectedSize);
-      }
-    },
-    [applyChange],
-  );
+  const { pixels, applyChange, undo, redo, canUndo, canRedo } = usePixelState({
+    width: 16,
+    height: 16,
+  });
+  const gridSize: Size = { width: pixels.length, height: pixels[0]?.length ?? 0 };
 
   const {
     tileOrder,
@@ -88,7 +81,7 @@ export default function PixelArtEditor() {
     setCompression,
     handleEncode,
     handleDecode,
-  } = useHexConversion({ pixels, gridSize, colorCount, onDecodeSuccess: handleDecodeSuccess });
+  } = useHexConversion({ pixels, gridSize, colorCount, onDecodeSuccess: applyChange });
 
   const { handleFileDownload } = usePixelDownload(pixels);
 
@@ -98,14 +91,9 @@ export default function PixelArtEditor() {
     handleChange: handleUploadChange,
   } = useFileUpload({ colorCount, gridSize, applyChange, onError: setError });
 
-  const handleGridSizeChange = useCallback(
-    (dimension: "width" | "height", value: number) => {
-      const newSize = { ...gridSize, [dimension]: value };
-      setGridSize(newSize);
-      applyChange(createInitialPixels(newSize));
-    },
-    [gridSize, applyChange],
-  );
+  const handleGridSizeChange = (dimension: "width" | "height", value: number) => {
+    applyChange(createInitialPixels({ ...gridSize, [dimension]: value }));
+  };
 
   const handlePaintCells = useCallback(
     (cells: CellPoint[]) => {
